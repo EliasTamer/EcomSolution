@@ -5,7 +5,6 @@ namespace EcomAPI.Interfaces
 {
     public interface IUsersService
     {
-        Task<int> CreateUser(CreateUserDTO user);
-        Task<User?> GetUserDetails(int id);
+        CreateUserDTO CreateUser(CreateUserDTO user);
     }
 }

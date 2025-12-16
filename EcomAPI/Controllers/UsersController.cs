@@ -1,23 +1,28 @@
-﻿using EcomAPI.Entities;
+﻿using EcomAPI.DTOs;
+using EcomAPI.Entities;
+using EcomAPI.Interfaces;
 using EcomAPI.Services;
 using Microsoft.AspNetCore.Mvc;
-
 namespace EcomAPI.Controllers
 {
     [ApiController]
     [Route("api/UsersAuth")]
     public class UsersController : ControllerBase
     {
-        [HttpGet("GetUser")]
-        public IActionResult GetUser()
+        private readonly IUsersService _usersService;
+        public UsersController(IUsersService usersService)
         {
-            UserEntity user = new UserEntity()
+            _usersService = usersService;
+        }
+        [HttpGet("GetUser")]
+        public IActionResult CreateUser()
+        {
+            CreateUserDTO user = new CreateUserDTO
             {
-                Id = 1,
-                FirstName = "Elias",
-                LastName = "Tamer",
-                Email = "eliastamer@gmail.com",
-                Role = "admin"
+                FirstName = "John",
+                LastName = "Doe",
+                Password = "Password123",
+                Email = ""
             };
             return Ok(user);
         }
