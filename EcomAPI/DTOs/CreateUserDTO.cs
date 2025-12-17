@@ -1,6 +1,6 @@
 ﻿namespace EcomAPI.DTOs
 {
-    public class CreateUserDTO
+    public class CreateUserRequestDTO
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }

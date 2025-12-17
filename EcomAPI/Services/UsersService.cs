@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using Dapper;
 using EcomAPI.DTOs;
 using EcomAPI.Entities;
 using EcomAPI.Interfaces;
@@ -13,12 +14,25 @@ namespace EcomAPI.Services
         {
             _db = db;
         }
-        private void InitializeDatabse() {
-            
-        }
-        public CreateUserDTO CreateUser (CreateUserDTO user)
+        public async Task<int> CreateUser (CreateUserRequestDTO user)
         {
-            return user;
+            User usersParams = new User
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Password = user.Password,
+                Email = user.Email,
+                Role = user.Role,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            };
+
+            var sql = @"INSERT INTO Users(FirstName, LastName, Password, Email, Role, CreatedAt, UpdatedAt) 
+                      VALUES (@FirstName, @LastName, @Password, @Email, @Role, @CreatedAt, @UpdatedAt)
+                      SELECT CAST(SCOPE_IDENTTIY() as int)";
+
+            return await _db.QuerySingleAsync<int>(sql, usersParams);
+
         }
     }
 }

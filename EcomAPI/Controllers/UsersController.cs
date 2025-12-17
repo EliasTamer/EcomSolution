@@ -14,17 +14,11 @@ namespace EcomAPI.Controllers
         {
             _usersService = usersService;
         }
-        [HttpGet("GetUser")]
-        public IActionResult CreateUser()
+        [HttpPost("CreateUser")]
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequestDTO newUser)
         {
-            CreateUserDTO user = new CreateUserDTO
-            {
-                FirstName = "John",
-                LastName = "Doe",
-                Password = "Password123",
-                Email = ""
-            };
-            return Ok(user);
+            int id = await _usersService.CreateUser(newUser);
+            return Ok(new { id, Message = "User created." });
         }
     }
 }
