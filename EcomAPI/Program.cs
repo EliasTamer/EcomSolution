@@ -4,12 +4,18 @@ using System.Data;
 using EcomAPI.Interfaces;
 using EcomAPI.Services;
 
+// TO DO LIST:
+// 1. ERROR HANDLING FOR CreateUser IN CONTROLLER
+// 2. CHECK WHAT ModelState.Isvalid DOES IN CONTROLLER
+// 3. CREATE A GENERIC RESPONSE CLASS FOR ALL ENDPOINTS
+// 4. HASH THE PASSWORDS STORED IN DB
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 
-builder.Services.AddScoped<IDbConnection>(sp =>  new SqlConnection(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<IDbConnection>(sp =>  new SqlConnection(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
 builder.Services.AddScoped<IUsersService, UsersService>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

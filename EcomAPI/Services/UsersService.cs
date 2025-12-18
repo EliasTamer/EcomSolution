@@ -14,7 +14,7 @@ namespace EcomAPI.Services
         {
             _db = db;
         }
-        public async Task<int> CreateUser (CreateUserRequestDTO user)
+        public async Task<int> CreateUser(CreateUserRequestDTO user)
         {
             User usersParams = new User
             {
@@ -29,7 +29,7 @@ namespace EcomAPI.Services
 
             var sql = @"INSERT INTO Users(FirstName, LastName, Password, Email, Role, CreatedAt, UpdatedAt) 
                       VALUES (@FirstName, @LastName, @Password, @Email, @Role, @CreatedAt, @UpdatedAt)
-                      SELECT CAST(SCOPE_IDENTTIY() as int)";
+                      SELECT CAST(SCOPE_IDENTITY() as int)";
 
             return await _db.QuerySingleAsync<int>(sql, usersParams);
 
