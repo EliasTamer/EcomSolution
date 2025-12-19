@@ -25,7 +25,7 @@ namespace EcomAPI.Controllers
             if (!ModelState.IsValid)
             {
                 response.Success = false;
-                response.Status = HttpStatusCode.BadRequest;
+                response.Status = (int)HttpStatusCode.BadRequest;
                 response.Message = "Validaiton failed.";
                 response.Errors = ModelState.Values.SelectMany(v => v.Errors)
                                   .Select(e => e.ErrorMessage)
@@ -37,8 +37,9 @@ namespace EcomAPI.Controllers
             try
             {
                 int id = await _usersService.CreateUser(newUser);
+
                 response.Success = true;
-                response.Status = HttpStatusCode.OK;
+                response.Status = (int)HttpStatusCode.OK;
                 response.Message = "User created.";
                 response.Data = new { UserCreatedId = id };
 
@@ -47,7 +48,7 @@ namespace EcomAPI.Controllers
             catch(Exception ex)
             {
                 response.Success = false;
-                response.Status = HttpStatusCode.InternalServerError;
+                response.Status = (int)HttpStatusCode.InternalServerError;
                 response.Message = "An error occurred while creating the user.";
                 response.Errors = new List<string> { ex.Message };
 
