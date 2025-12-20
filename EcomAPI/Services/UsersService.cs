@@ -3,7 +3,6 @@ using Dapper;
 using EcomAPI.DTOs;
 using EcomAPI.Entities;
 using EcomAPI.Interfaces;
-using Microsoft.AspNetCore.Mvc;
 
 namespace EcomAPI.Services
 {
@@ -33,6 +32,12 @@ namespace EcomAPI.Services
 
             return await _db.QuerySingleAsync<int>(sql, usersParams);
 
+        }
+
+        public async Task<UserResponseDTO?> GetUserByEmail(string email)
+        {
+            var sql = "SELECT Id, Email, FirstName, LastName, Role FROM Users WHERE Email = @Email";
+            return await _db.QueryFirstOrDefaultAsync<UserResponseDTO>(sql, new { Email = email });
         }
     }
 }

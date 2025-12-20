@@ -1,7 +1,5 @@
 ﻿using EcomAPI.DTOs;
-using EcomAPI.Entities;
 using EcomAPI.Interfaces;
-using EcomAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using EcomAPI.Responses;
 using System.Net;
@@ -24,7 +22,6 @@ namespace EcomAPI.Controllers
 
             if (!ModelState.IsValid)
             {
-                response.Success = false;
                 response.Status = (int)HttpStatusCode.BadRequest;
                 response.Message = "Validaiton failed.";
                 response.Errors = ModelState.Values.SelectMany(v => v.Errors)
@@ -34,8 +31,14 @@ namespace EcomAPI.Controllers
                 return BadRequest(response);
             }
 
-            try
-            {
+            try {
+                var userFound = await _usersService.GetUserByEmail(newUser.Email);
+                if(userFound != null )
+                {   
+                    response.Status = (int)HttpStatusCode.BadRequest;
+                    response.Message = "User already exists with this email.";
+                    return BadRequest(response);
+                }
                 int id = await _usersService.CreateUser(newUser);
 
                 response.Success = true;
@@ -45,9 +48,7 @@ namespace EcomAPI.Controllers
 
                 return Ok(response);
             }
-            catch(Exception ex)
-            {
-                response.Success = false;
+            catch(Exception ex) {
                 response.Status = (int)HttpStatusCode.InternalServerError;
                 response.Message = "An error occurred while creating the user.";
                 response.Errors = new List<string> { ex.Message };

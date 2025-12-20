@@ -5,15 +5,17 @@ using EcomAPI.Interfaces;
 using EcomAPI.Services;
 
 // TO DO LIST:
-// 1. ERROR HANDLING FOR CreateUser IN CONTROLLER
-// 2. CREATE A GENERIC RESPONSE CLASS FOR ALL ENDPOINTS
-// 3. HASH THE PASSWORDS STORED IN DB
-// 4. CAST STATUS PROPERTY IN ApiResponse TO INT
+// 1. HASH THE PASSWORDS STORED IN DB
+// 2. CREATE A NEW SERVICE THAT HANDLES CREATING AND CONFIGURING A NEW TOKEN
+// 3. ADD LOGIN ENDPOINT TO VALIDATE USER AND RETURN JWT TOKEN
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
+{
+    options.SuppressModelStateInvalidFilter = true;
+});
 
 builder.Services.AddScoped<IDbConnection>(sp =>  new SqlConnection(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
 builder.Services.AddScoped<IUsersService, UsersService>();
