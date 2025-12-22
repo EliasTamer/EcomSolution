@@ -19,6 +19,7 @@ builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
 
 builder.Services.AddScoped<IDbConnection>(sp =>  new SqlConnection(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
 builder.Services.AddScoped<IUsersService, UsersService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

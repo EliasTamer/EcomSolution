@@ -34,10 +34,10 @@ namespace EcomAPI.Services
 
         }
 
-        public async Task<UserResponseDTO?> GetUserByEmail(string email)
+        public async Task<User?> GetUserByEmail(string email)
         {
-            var sql = "SELECT Id, Email, FirstName, LastName, Role FROM Users WHERE Email = @Email";
-            return await _db.QueryFirstOrDefaultAsync<UserResponseDTO>(sql, new { Email = email });
+            var sql = "SELECT * FROM Users WHERE Email = @Email";
+            return await _db.QueryFirstOrDefaultAsync<User>(sql, new { Email = email });
         }
     }
 }
