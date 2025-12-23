@@ -19,7 +19,7 @@ namespace EcomAPI.Services
             {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Password = user.Password,
+                Password = BCrypt.Net.BCrypt.HashPassword(user.Password),
                 Email = user.Email,
                 Role = user.Role,
                 CreatedAt = DateTime.Now,

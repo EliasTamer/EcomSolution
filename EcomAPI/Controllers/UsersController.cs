@@ -3,7 +3,6 @@ using EcomAPI.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using EcomAPI.Responses;
 using System.Net;
-using EcomAPI.Services;
 
 namespace EcomAPI.Controllers
 {
@@ -86,7 +85,7 @@ namespace EcomAPI.Controllers
                     return Unauthorized(response);
                 }
 
-                if(user.Password != loginRequest.Password)
+                if(! BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
                 {
                     response.Status = 401;
                     response.Message = "Invalid email or password";
@@ -114,7 +113,10 @@ namespace EcomAPI.Controllers
             }
             catch (Exception ex)
             {
-
+                response.Status = 500;
+                response.Message = "An error occurred during login.";
+                response.Errors = new List<string> { ex.Message };
+                return StatusCode(500, response);
             }
         }
     }

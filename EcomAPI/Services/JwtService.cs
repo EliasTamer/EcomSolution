@@ -19,7 +19,7 @@ namespace EcomAPI.Services
             var secret = _configuration["JwtSettings:Secret"];
             var issuer = _configuration["JwtSettings:Issuer"];
             var audience = _configuration["JwtSettings:Audience"];
-            var expirationMinutes = int.Parse(_configuration["JwtSettings:ExpirationMinutes"]);
+            var expirationMinutes = int.Parse(_configuration["JwtSettings:ExpiryInMinutes"]);
 
             // transform the secret into a an array of bytes
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
