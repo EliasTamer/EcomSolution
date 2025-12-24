@@ -39,5 +39,39 @@ namespace EcomAPI.Services
             var sql = "SELECT * FROM Users WHERE Email = @Email";
             return await _db.QueryFirstOrDefaultAsync<User>(sql, new { Email = email });
         }
+
+        public async Task<PasswordChangeResult> ChangePassword(ChangePasswordDTO newPasswordRequest)
+        {
+            var user = await GetUserByEmail(newPasswordRequest.Email);
+            PasswordChangeResult result = new PasswordChangeResult();
+
+            if (user == null)
+            {
+                result.Message = "User not found";
+                return result;
+            }
+
+            if (!BCrypt.Net.BCrypt.Verify(newPasswordRequest.CurrentPassword, user.Password))
+            {
+                result.Message = "Current password is incorrect";
+                return result;
+            }
+
+            var hashedNewPassword = BCrypt.Net.BCrypt.HashPassword(newPasswordRequest.NewPassword);
+
+            var sql = "UPDATE Users SET PASSWORD = @Password, UpdatedAt = @UpdatedAt WHERE Email = @Email";
+
+            var rowsAffected = await _db.ExecuteAsync(sql, new
+            {
+                Password = hashedNewPassword,
+                UpdatedAt = DateTime.UtcNow,
+                Email = newPasswordRequest.Email
+            });
+
+            if(rowsAffected == 0)
+            {
+
+            }
+        }
     }
 }
