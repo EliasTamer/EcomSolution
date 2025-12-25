@@ -70,8 +70,13 @@ namespace EcomAPI.Services
 
             if(rowsAffected == 0)
             {
-
+                result.Message = "Password update failed";
+                return result;
             }
+
+            result.Success = true;
+            result.Message = "Password updated successfully";
+            return result;
         }
     }
 }

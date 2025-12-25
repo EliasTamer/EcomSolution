@@ -24,7 +24,7 @@ namespace EcomAPI.Controllers
 
             if (!ModelState.IsValid)
             {
-                response.Status = (int)HttpStatusCode.BadRequest;
+                response.Status = 400;
                 response.Message = "Validaiton failed.";
                 response.Errors = ModelState.Values.SelectMany(v => v.Errors)
                                   .Select(e => e.ErrorMessage)
@@ -37,25 +37,25 @@ namespace EcomAPI.Controllers
                 var userFound = await _usersService.GetUserByEmail(newUser.Email);
                 if(userFound != null )
                 {   
-                    response.Status = (int)HttpStatusCode.BadRequest;
+                    response.Status = 400;
                     response.Message = "User already exists with this email.";
                     return BadRequest(response);
                 }
                 int id = await _usersService.CreateUser(newUser);
 
                 response.Success = true;
-                response.Status = (int)HttpStatusCode.OK;
+                response.Status = 200;
                 response.Message = "User created.";
                 response.Data = new { UserCreatedId = id };
 
                 return Ok(response);
             }
             catch(Exception ex) {
-                response.Status = (int)HttpStatusCode.InternalServerError;
+                response.Status = 500;
                 response.Message = "An error occurred while creating the user.";
                 response.Errors = new List<string> { ex.Message };
 
-                return StatusCode((int)HttpStatusCode.InternalServerError, response);
+                return StatusCode(500, response);
             }
         }
         [HttpPost("Login")]
@@ -115,6 +115,47 @@ namespace EcomAPI.Controllers
             {
                 response.Status = 500;
                 response.Message = "An error occurred during login.";
+                response.Errors = new List<string> { ex.Message };
+                return StatusCode(500, response);
+            }
+        }
+        [HttpPost("ChangePassword")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO changePasswordRequest)
+        {
+            ApiResponse response = new ApiResponse();
+
+            if(!ModelState.IsValid)
+            {
+                response.Status = 400;
+                response.Message = "Validation failed";
+                response.Errors = ModelState.Values.SelectMany(v => v.Errors)
+                                  .Select(e => e.ErrorMessage)
+                                  .ToList();
+
+                return BadRequest(response);
+            }
+
+            try
+            {
+                var result = await _usersService.ChangePassword(changePasswordRequest);
+
+                if(!result.Success)
+                {
+                    response.Status = 400;
+                    response.Message = result.Message;
+                    return BadRequest(response);
+                }
+
+                response.Success= true;
+                response.Status = 200;
+                response.Message = result.Message;
+
+                return Ok(response);
+            } 
+            catch(Exception ex)
+            {
+                response.Status = 500;
+                response.Message = "An error occured";
                 response.Errors = new List<string> { ex.Message };
                 return StatusCode(500, response);
             }
