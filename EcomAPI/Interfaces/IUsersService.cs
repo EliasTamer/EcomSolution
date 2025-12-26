@@ -8,5 +8,6 @@ namespace EcomAPI.Interfaces
         Task<int> CreateUser(CreateUserRequestDTO user);
         Task<User?> GetUserByEmail(string email);
         Task<PasswordChangeResult> ChangePassword(ChangePasswordDTO newPassword);
+        Task<UserProfileResponseDTO?> GetUserProfile(int userId);
     }
 }

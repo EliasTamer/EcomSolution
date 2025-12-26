@@ -33,10 +33,11 @@ namespace EcomAPI.Controllers
                 return BadRequest(response);
             }
 
-            try {
+            try
+            {
                 var userFound = await _usersService.GetUserByEmail(newUser.Email);
-                if(userFound != null )
-                {   
+                if (userFound != null)
+                {
                     response.Status = 400;
                     response.Message = "User already exists with this email.";
                     return BadRequest(response);
@@ -50,7 +51,8 @@ namespace EcomAPI.Controllers
 
                 return Ok(response);
             }
-            catch(Exception ex) {
+            catch (Exception ex)
+            {
                 response.Status = 500;
                 response.Message = "An error occurred while creating the user.";
                 response.Errors = new List<string> { ex.Message };
@@ -63,7 +65,7 @@ namespace EcomAPI.Controllers
         {
             var response = new ApiResponse();
 
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 response.Status = 400;
                 response.Message = "Validation failed.";
@@ -78,14 +80,14 @@ namespace EcomAPI.Controllers
             {
                 var user = await _usersService.GetUserByEmail(loginRequest.Email);
 
-                if(user == null)
+                if (user == null)
                 {
                     response.Status = 401;
                     response.Message = "Invalid email or password";
                     return Unauthorized(response);
                 }
 
-                if(! BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
+                if (!BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
                 {
                     response.Status = 401;
                     response.Message = "Invalid email or password";
@@ -124,7 +126,7 @@ namespace EcomAPI.Controllers
         {
             ApiResponse response = new ApiResponse();
 
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 response.Status = 400;
                 response.Message = "Validation failed";
@@ -139,23 +141,50 @@ namespace EcomAPI.Controllers
             {
                 var result = await _usersService.ChangePassword(changePasswordRequest);
 
-                if(!result.Success)
+                if (!result.Success)
                 {
                     response.Status = 400;
                     response.Message = result.Message;
                     return BadRequest(response);
                 }
 
-                response.Success= true;
+                response.Success = true;
                 response.Status = 200;
                 response.Message = result.Message;
 
                 return Ok(response);
-            } 
-            catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 response.Status = 500;
                 response.Message = "An error occured";
+                response.Errors = new List<string> { ex.Message };
+                return StatusCode(500, response);
+            }
+        }
+        [HttpGet("GetUserProfile/{userId}")]
+        public async Task<IActionResult> GetUserProfile([FromRoute] int userId)
+        {
+            ApiResponse response = new ApiResponse();
+            try
+            {
+                var userProfile = await _usersService.GetUserProfile(userId);
+                if (userProfile == null)
+                {
+                    response.Status = 404;
+                    response.Message = "User not found";
+                    return NotFound(response);
+                }
+                response.Success = true;
+                response.Status = 200;
+                response.Message = "User profile retrieved successfully";
+                response.Data = userProfile;
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.Status = 500;
+                response.Message = "An error occurred while retrieving the user profile.";
                 response.Errors = new List<string> { ex.Message };
                 return StatusCode(500, response);
             }

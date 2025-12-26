@@ -73,3 +73,15 @@
 --INSERT INTO OrderItems (OrderId, ProductId, Quantity, UnitPrice, Subtotal) VALUES
 --(2, 1, 2, 29.99, 59.98),
 --(2, 2, 1, 149.99, 149.99);
+
+
+--ALTER TABLE Users 
+--    ADD ProfilePhoto NVARCHAR(255) NULL,
+--    Country NVARCHAR(100) NOT NULL DEFAULT 'Unknown',
+--    PhoneNumber NVARCHAR(20) NULL,
+--    Address NVARCHAR(500) NULL;
+
+
+--UPDATE Users
+--  SET Address = 'Not provided', PhoneNumber = 'Not provided'
+--  WHERE Address IS NULL OR PhoneNumber IS NULL;

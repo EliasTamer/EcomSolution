@@ -40,6 +40,15 @@ namespace EcomAPI.Services
             return await _db.QueryFirstOrDefaultAsync<User>(sql, new { Email = email });
         }
 
+        public async Task<UserProfileResponseDTO?> GetUserProfile(int userId)
+        {
+            var sql = @"SELECT FirstName, Password, LastName, Email, Role, UpdatedAt, CreatedAt, ProfilePhoto, Country, PhoneNumber
+                       FROM Users
+                       WHERE Id = @Id";
+
+            return await _db.QueryFirstOrDefaultAsync<UserProfileResponseDTO>(sql, new { Id = userId });
+        }
+
         public async Task<PasswordChangeResult> ChangePassword(ChangePasswordDTO newPasswordRequest)
         {
             var user = await GetUserByEmail(newPasswordRequest.Email);
