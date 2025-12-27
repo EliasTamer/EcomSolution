@@ -2,12 +2,13 @@
 using System.Data;
 using EcomAPI.Interfaces;
 using EcomAPI.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 // TO DO LIST:
-// 2. CREATE PRODUCTS, PRODUCT CATEGORIES AND ORDERS TABLES AND THEIR RESPECTIVE ENDPOINTS
-// 3. ADD GET USER PROFILE ENDPOINT AND ADD NEW FIELDS FOR USER TABLE (PROFILE PHOTO, COUNTRY, PHONE NUMBER, ADDRESS)
-// 4. ADD FILERING AND PAGINATION TO PRODUCTS ENDPOINT
-// 5. PROTECT ENDPOINTS USING JWT AUTHENTICATION
+// 1. CREATE PRODUCTS, PRODUCT CATEGORIES AND ORDERS TABLES AND THEIR RESPECTIVE ENDPOINTS
+// 2. ADD FILERING AND PAGINATION TO PRODUCTS ENDPOINT
+// 3. PROTECT ENDPOINTS USING JWT AUTHENTICATION
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,30 @@ builder.Services.AddScoped<IDbConnection>(sp =>  new SqlConnection(builder.Confi
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 
+var jwtSecret = builder.Configuration["JwtSettings:Secret"];
+var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
+var jwtAudience = builder.Configuration["JwtSettings:Audience"];
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwtSecret))
+    };
+});
+
+builder.Services.AddAuthorization();
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -33,6 +58,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

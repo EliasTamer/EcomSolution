@@ -3,6 +3,7 @@ using EcomAPI.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using EcomAPI.Responses;
 using System.Net;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EcomAPI.Controllers
 {
@@ -162,6 +163,7 @@ namespace EcomAPI.Controllers
                 return StatusCode(500, response);
             }
         }
+        [Authorize(Role ="Admin")]
         [HttpGet("GetUserProfile/{userId}")]
         public async Task<IActionResult> GetUserProfile([FromRoute] int userId)
         {
