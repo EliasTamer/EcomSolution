@@ -18,5 +18,12 @@ namespace EcomAPI.DTOs
         public string Email { get; set; }
         [Required]
         public string Role { get; set; }
+        [Required]
+        public string Address { get; set; }
+        [Required]
+        public string PhoneNumber { get; set; }
+        public string ProfilePhoto { get; set; }
+        public string Country { get; set; }
+
     }
 }

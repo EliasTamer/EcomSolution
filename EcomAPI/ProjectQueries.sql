@@ -25,6 +25,21 @@
 --    CONSTRAINT FK_Products_Category FOREIGN KEY (CategoryId) REFERENCES ProductCategories(Id)
 --);
 
+--CREATE TABLE Users (
+--    Id INT IDENTITY(1,1) PRIMARY KEY,
+--    FirstName NVARCHAR(100) NOT NULL,
+--    LastName NVARCHAR(100) NOT NULL,
+--    Password NVARCHAR(255) NOT NULL,
+--    Email NVARCHAR(255) NOT NULL UNIQUE,
+--    Role NVARCHAR(50) NOT NULL DEFAULT 'User',
+--    UpdatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+--    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+--    ProfilePhoto NVARCHAR(255) NULL,
+--    Country NVARCHAR(100) NULL,
+--    PhoneNumber NVARCHAR(20) NOT NULL,
+--    Address NVARCHAR(500) NOT NULL
+--);
+
 
 --CREATE TABLE Orders (
 --    Id INT PRIMARY KEY IDENTITY(1,1),

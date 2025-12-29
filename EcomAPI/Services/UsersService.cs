@@ -22,12 +22,16 @@ namespace EcomAPI.Services
                 Password = BCrypt.Net.BCrypt.HashPassword(user.Password),
                 Email = user.Email,
                 Role = user.Role,
+                Address = user.Address,
+                ProfilePhoto = user.ProfilePhoto,
+                PhoneNumber = user.ProfilePhoto,
+                Country = user.Country,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             };
 
-            var sql = @"INSERT INTO Users(FirstName, LastName, Password, Email, Role, CreatedAt, UpdatedAt) 
-                      VALUES (@FirstName, @LastName, @Password, @Email, @Role, @CreatedAt, @UpdatedAt)
+            var sql = @"INSERT INTO Users(FirstName, LastName, Password, Email, Role, Address, ProfilePhoto, PhoneNumber, Country, CreatedAt, UpdatedAt) 
+                      VALUES (@FirstName, @LastName, @Password, @Email, @Role, @Address, @ProfilePhoto, @PhoneNumber, @Country, @CreatedAt, @UpdatedAt)
                       SELECT CAST(SCOPE_IDENTITY() as int)";
 
             return await _db.QuerySingleAsync<int>(sql, usersParams);

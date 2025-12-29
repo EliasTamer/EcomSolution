@@ -122,6 +122,7 @@ namespace EcomAPI.Controllers
                 return StatusCode(500, response);
             }
         }
+        [Authorize]
         [HttpPost("ChangePassword")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO changePasswordRequest)
         {
@@ -163,7 +164,7 @@ namespace EcomAPI.Controllers
                 return StatusCode(500, response);
             }
         }
-        [Authorize(Role ="Admin")]
+        [Authorize]
         [HttpGet("GetUserProfile/{userId}")]
         public async Task<IActionResult> GetUserProfile([FromRoute] int userId)
         {

@@ -30,10 +30,11 @@ namespace EcomAPI.Services
             // claims are info related to the user
             var claims = new[]
             {
-                new Claim("Email", user.Email),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim("FirstName", user.FirstName),
                 new Claim("LastName", user.LastName),
-                new Claim("Role", user.Role)
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
             // create the token 
