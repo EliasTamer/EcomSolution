@@ -8,7 +8,6 @@ using Microsoft.IdentityModel.Tokens;
 // TO DO LIST:
 // 1. CREATE PRODUCTS, PRODUCT CATEGORIES AND ORDERS TABLES AND THEIR RESPECTIVE ENDPOINTS
 // 2. ADD FILERING AND PAGINATION TO PRODUCTS ENDPOINT
-// 3. PROTECT ENDPOINTS USING JWT AUTHENTICATION
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +19,7 @@ builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
 
 builder.Services.AddScoped<IDbConnection>(sp =>  new SqlConnection(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
 builder.Services.AddScoped<IUsersService, UsersService>();
+builder.Services.AddScoped<IProductCategoriesService, ProductCategoriesService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 
 var jwtSecret = builder.Configuration["JwtSettings:Secret"];

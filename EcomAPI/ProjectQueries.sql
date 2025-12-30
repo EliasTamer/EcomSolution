@@ -83,11 +83,11 @@
 --('Programming Book', 'Learn C# and .NET Core', 49.99, 3, 'https://example.com/book.jpg', 20);
 
 --INSERT INTO Orders (UserId, OrderNumber, TotalAmount, Status, ShippingAddress, PaymentMethod, PaymentStatus) 
---VALUES (16, 'ORD-2025-0001', 199.97, 'Pending', '123 Main St, Dubai, UAE', 'Credit Card', 'Paid');
+--VALUES (8, 'ORD-2025-0001', 199.97, 'Pending', '123 Main St, Dubai, UAE', 'Credit Card', 'Paid');
 
 --INSERT INTO OrderItems (OrderId, ProductId, Quantity, UnitPrice, Subtotal) VALUES
---(2, 1, 2, 29.99, 59.98),
---(2, 2, 1, 149.99, 149.99);
+--(1, 1, 2, 29.99, 59.98),
+--(1, 2, 1, 149.99, 149.99);
 
 
 --ALTER TABLE Users 
