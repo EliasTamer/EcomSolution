@@ -17,7 +17,7 @@ namespace EcomAPI.Services
         {
             ProductCategory productCategory = new ProductCategory()
             {
-                Title = category.Title,
+                Title = category.Title, 
                 Description = category.Description,
                 ImageUrl = category.ImageUrl,
             };
@@ -26,8 +26,14 @@ namespace EcomAPI.Services
                       VALUES(@Title, @Description, @ImageUrl)
                       SELECT CAST(SCOPE_IDENTITY() as int)";
 
-             return await _db.QuerySingleAsync(sql, productCategory);
+             return await _db.QuerySingleAsync<int>(sql, productCategory);
 
+        }
+
+        public async Task<int> DeleteProductCategory (int categoryId)
+        {
+            var sql = @"DELETE FROM ProductCategories WHERE Id = @categoryId";
+            return await _db.ExecuteAsync(sql, new { categoryId = categoryId });
         }
 
     }

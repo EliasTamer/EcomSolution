@@ -1,5 +1,7 @@
 ﻿using EcomAPI.DTOs;
 using EcomAPI.Interfaces;
+using EcomAPI.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 
@@ -16,10 +18,73 @@ namespace EcomAPI.Controllers
             _productCategoriesService = productCategoriesService;
         }
 
+        [Authorize]
         [HttpPost("CreateProductCategory")]
-        public async Task<IActionResult> CreateProductCategory(CreateProductCategoryDTO category)
+        public async Task<IActionResult> CreateProductCategory([FromBody] CreateProductCategoryDTO category)
         {
+            ApiResponse response = new ApiResponse();
+            
+            if(!ModelState.IsValid)
+            {
+                response.Status = 400;
+                response.Message = "Validation failed.";
+                response.Errors = ModelState.Values.SelectMany(v => v.Errors)
+                  .Select(e => e.ErrorMessage)
+                  .ToList();
 
+                return BadRequest(response);
+            }
+
+            try
+            {
+                var createdId = await _productCategoriesService.CreateProductCategory(category);
+
+                response.Status = 200;
+                response.Success = true;
+                response.Message = "Product category created successfuly.";
+                response.Data = new { productCategoryId =  createdId };
+
+                return Ok(response);
+            }
+            catch (Exception ex) { 
+                response.Status =500;
+                response.Message = ex.Message;
+
+                return StatusCode(500, response);
+            }
+        }
+
+        [Authorize]
+        [HttpDelete("DeleteProductCategory/{categoryId}")]
+        public async Task<IActionResult> DeleteProductCategory([FromRoute] int categoryId)
+        {
+            ApiResponse response = new ApiResponse();
+
+            try
+            {
+                var affectedRows = await _productCategoriesService.DeleteProductCategory(categoryId);
+
+                if(affectedRows > 0)
+                {
+                    response.Success = true;
+                    response.Status = 200;
+                    response.Message = "Product category was deleted successfully.";
+
+                    return Ok(response);
+                } else
+                {
+                    response.Status = 404;
+                    response.Message = "Product doesn't exist";
+
+                    return NotFound(response);
+
+                }
+            }
+            catch (Exception ex) {
+                response.Status = 500;
+                response.Message = ex.Message;
+                return StatusCode(500, response);
+            }
         }
     }
 }
