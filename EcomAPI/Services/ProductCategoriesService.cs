@@ -43,7 +43,7 @@ namespace EcomAPI.Services
             return await _db.QueryFirstOrDefaultAsync<ProductCategory?>(sql, new { categoryId = categoryId });
         }
 
-        public async Task<bool?> EditProductCategory(int id, PatchProductCategoryDTO updatedCategory)
+        public async Task<bool> EditProductCategory(int id, PatchProductCategoryDTO updatedCategory)
         {
             var categoryToUpdate = await GetProductCategoryDetails(id);
             if(categoryToUpdate == null)
