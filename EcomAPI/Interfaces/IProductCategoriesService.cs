@@ -1,4 +1,5 @@
 ﻿using EcomAPI.DTOs;
+using EcomAPI.Entities;
 
 namespace EcomAPI.Interfaces
 {
@@ -6,5 +7,7 @@ namespace EcomAPI.Interfaces
     {
         public Task<int> CreateProductCategory(CreateProductCategoryDTO category); 
         public Task<int> DeleteProductCategory (int id);
+        public Task<ProductCategory?> GetProductCategoryDetails(int id);
+        public Task<bool> EditProductCategory(int id, PatchProductCategoryDTO category);
     }
 }

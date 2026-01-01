@@ -31,7 +31,6 @@ namespace EcomAPI.Controllers
                 response.Errors = ModelState.Values.SelectMany(v => v.Errors)
                   .Select(e => e.ErrorMessage)
                   .ToList();
-
                 return BadRequest(response);
             }
 
@@ -43,13 +42,11 @@ namespace EcomAPI.Controllers
                 response.Success = true;
                 response.Message = "Product category created successfuly.";
                 response.Data = new { productCategoryId =  createdId };
-
                 return Ok(response);
             }
             catch (Exception ex) { 
                 response.Status =500;
                 response.Message = ex.Message;
-
                 return StatusCode(500, response);
             }
         }
@@ -69,15 +66,12 @@ namespace EcomAPI.Controllers
                     response.Success = true;
                     response.Status = 200;
                     response.Message = "Product category was deleted successfully.";
-
                     return Ok(response);
                 } else
                 {
                     response.Status = 404;
                     response.Message = "Product doesn't exist";
-
                     return NotFound(response);
-
                 }
             }
             catch (Exception ex) {
@@ -85,6 +79,52 @@ namespace EcomAPI.Controllers
                 response.Message = ex.Message;
                 return StatusCode(500, response);
             }
+        }
+        [Authorize]
+        [HttpGet("GetProductCategoryDetails/{categoryId}")]
+        public async Task<IActionResult> GetProductCategoryDetails([FromRoute] int categoryId)
+        {
+            ApiResponse response = new ApiResponse();
+
+            var categoryDetails = await _productCategoriesService.GetProductCategoryDetails(categoryId);
+
+            if(categoryDetails == null)
+            {
+                response.Status = 404;
+                response.Message = "Product category doesn't exist";
+                return NotFound(response);
+            }
+            else
+            {
+                response.Status = 200;
+                response.Data = categoryDetails;
+                response.Success = true;
+                return Ok(response);
+            }
+        }
+
+        [Authorize]
+        [HttpPatch("/EditProductCategory/{categoryId}")]
+        public async Task<IActionResult> EditProductCategory([FromRoute] int categoryId, [FromBody] PatchProductCategoryDTO updatedFields)
+        {
+            ApiResponse response = new ApiResponse();
+
+            bool isEdited = await _productCategoriesService.EditProductCategory(categoryId, updatedFields);
+
+            if(!isEdited)
+            {
+                response.Status = 400;
+                response.Message = "Editing category has failed.";
+                return BadRequest(response);
+            }
+            else
+            {
+                response.Success = true;
+                response.Status = 200;
+                response.Message = "Category was edited successfuly.";
+                return Ok(response);
+            }
+
         }
     }
 }
