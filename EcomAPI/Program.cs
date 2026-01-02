@@ -1,9 +1,11 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using EcomAPI;
+using Microsoft.Data.SqlClient;
 using System.Data;
 using EcomAPI.Interfaces;
 using EcomAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+
 
 // TO DO LIST:
 // 1. CREATE PRODUCTS, PRODUCT CATEGORIES AND ORDERS TABLES AND THEIR RESPECTIVE ENDPOINTS
@@ -22,6 +24,8 @@ builder.Services.AddScoped<IDbConnection>(sp =>  new SqlConnection(builder.Confi
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IProductCategoriesService, ProductCategoriesService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+
+builder.Services.AddAutoMapper(typeof(MappingConfig));
 
 var jwtSecret = builder.Configuration["JwtSettings:Secret"];
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
