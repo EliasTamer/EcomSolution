@@ -104,7 +104,7 @@ namespace EcomAPI.Controllers
         }
 
         [Authorize]
-        [HttpPatch("/EditProductCategory/{categoryId}")]
+        [HttpPatch("EditProductCategory/{categoryId}")]
         public async Task<IActionResult> EditProductCategory([FromRoute] int categoryId, [FromBody] PatchProductCategoryDTO updatedFields)
         {
             ApiResponse response = new ApiResponse();
@@ -124,7 +124,6 @@ namespace EcomAPI.Controllers
                 response.Message = "Category was edited successfuly.";
                 return Ok(response);
             }
-
         }
     }
 }

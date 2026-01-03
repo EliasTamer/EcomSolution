@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using EcomAPI.DTOs;
+using EcomAPI.Entities;
 
 namespace EcomAPI
 {
@@ -6,7 +8,8 @@ namespace EcomAPI
     {
         public MappingConfig()
         {
-
+            CreateMap<PatchProductCategoryDTO, ProductCategory>().ReverseMap();
+            CreateMap<PatchProductCategoryDTO, ProductCategory>().ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

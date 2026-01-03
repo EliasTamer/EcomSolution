@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using AutoMapper;
+using Dapper;
 using EcomAPI.DTOs;
 using EcomAPI.Entities;
 using EcomAPI.Interfaces;
@@ -9,9 +10,11 @@ namespace EcomAPI.Services
     public class ProductCategoriesService : IProductCategoriesService
     {
         private readonly IDbConnection _db;
-        public ProductCategoriesService(IDbConnection db)
+        private readonly IMapper _mapper;
+        public ProductCategoriesService(IDbConnection db, IMapper mapper)
         {
             _db = db;
+            _mapper = mapper;
         }
 
         public async Task<int> CreateProductCategory(CreateProductCategoryDTO category)
@@ -50,40 +53,17 @@ namespace EcomAPI.Services
             {
                 return false;
             }
-            else
-            {
-                var updates = new List<string>();
-                var parameters = new DynamicParameters();
 
-                parameters.Add("Id", id);
+            _mapper.Map(updatedCategory, categoryToUpdate);
+            categoryToUpdate.UpdatedAt = DateTime.Now;
 
-                if(updatedCategory.Title != null)
-                {
-                    updates.Add("Title = @Title");
-                    parameters.Add("Title", updatedCategory.Title);
-                }
+            var sql = @"UPDATE ProductCategories
+                      SET Title = @Title, Description = @Description, ImageUrl = @ImageUrl, UpdatedAt = @UpdatedAt
+                      WHERE Id = @Id";
 
-                if (updatedCategory.Description != null)
-                {
-                    updates.Add("Description  = @Description ");
-                    parameters.Add("Description ", updatedCategory.Description);
-                }
-
-                if (updatedCategory.ImageUrl != null)
-                {
-                    updates.Add("ImageUrl  = @ImageUrl ");
-                    parameters.Add("ImageUrl ", updatedCategory.ImageUrl);
-                }
-
-                updates.Add("UpdatedAt = @UpdatedAt");
-                parameters.Add("UpdatedAt", DateTime.UtcNow);
-
-                if (updates.Count == 1) return false;
-
-                var sql = $"UPDATE ProductCategories SET {string.Join(", ", updates)} WHERE Id = @Id";
-                var rowsAffected = await _db.ExecuteAsync(sql, parameters);
-                return rowsAffected > 0;
+            var rowsAffected = await _db.ExecuteAsync(sql, categoryToUpdate);
+            return rowsAffected > 0;
             }
         } 
     }
-}
+
