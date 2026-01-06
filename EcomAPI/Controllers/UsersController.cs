@@ -192,5 +192,24 @@ namespace EcomAPI.Controllers
                 return StatusCode(500, response);
             }
         }
+        [Authorize]
+        [HttpDelete("DeleteUser/{userId}")]
+        public async Task<IActionResult> DeleteUser([FromRoute] int userId)
+        {
+            ApiResponse response = new ApiResponse();
+            bool isDeleted = await _usersService.DeleteUser(userId);
+
+            if (!isDeleted)
+            {
+                response.Status = 400;
+                response.Message = "User deletion failed.";
+                return BadRequest(response);
+            } else
+            {
+                response.Success = true;
+                response.Message = "User deleted successfuly";
+                return Ok(response);
+            }
+        }
     }
 }

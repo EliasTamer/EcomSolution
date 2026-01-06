@@ -109,6 +109,16 @@ namespace EcomAPI.Controllers
         {
             ApiResponse response = new ApiResponse();
 
+            if (!ModelState.IsValid)
+            {
+                response.Status = 400;
+                response.Message = "Validation failed.";
+                response.Errors = ModelState.Values.SelectMany(v => v.Errors)
+                  .Select(e => e.ErrorMessage)
+                  .ToList();
+                return BadRequest(response);
+            }
+
             bool isEdited = await _productCategoriesService.EditProductCategory(categoryId, updatedFields);
 
             if(!isEdited)

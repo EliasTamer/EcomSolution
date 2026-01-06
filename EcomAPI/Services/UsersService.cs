@@ -46,7 +46,7 @@ namespace EcomAPI.Services
 
         public async Task<UserProfileResponseDTO?> GetUserProfile(int userId)
         {
-            var sql = @"SELECT FirstName, Password, LastName, Email, Role, UpdatedAt, CreatedAt, ProfilePhoto, Country, PhoneNumber
+            var sql = @"SELECT Id, FirstName, Password, LastName, Email, Role, UpdatedAt, CreatedAt, ProfilePhoto, Country, PhoneNumber
                        FROM Users
                        WHERE Id = @Id";
 
@@ -90,6 +90,21 @@ namespace EcomAPI.Services
             result.Success = true;
             result.Message = "Password updated successfully";
             return result;
+        }
+
+        public async Task<bool> DeleteUser(int userId)
+        {
+            var user = await GetUserProfile(userId);
+
+            if(user == null)
+            {
+                return false;
+            } else
+            {
+                var sql = "DELETE FROM Users WHERE Id = @Id";
+                var affectedRows = await _db.ExecuteAsync(sql, new { Id = userId });
+                return affectedRows > 0;
+            }
         }
     }
 }
