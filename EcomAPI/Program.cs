@@ -10,6 +10,8 @@ using Microsoft.IdentityModel.Tokens;
 // TO DO LIST:
 // 1. CREATE PRODUCTS AND ORDERS TABLES AND THEIR RESPECTIVE ENDPOINTS
 // 2. ADD ENDPOINT TO UPDATE USER DETAILS
+// 3. ADD RATE LIMITNG TO APIS
+// 4. ADD IMAGE HANDELING FOR USER REGISTRATION + ADD UPDATE PROFILE API
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +25,7 @@ builder.Services.AddScoped<IDbConnection>(sp =>  new SqlConnection(builder.Confi
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IProductCategoriesService, ProductCategoriesService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IProductsService, ProductsService>();
 
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 
