@@ -2,8 +2,8 @@
 using EcomAPI.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using EcomAPI.Responses;
-using System.Net;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EcomAPI.Controllers
 {
@@ -18,10 +18,11 @@ namespace EcomAPI.Controllers
             _usersService = usersService;
             _jwtService = jwtService;
         }
+
         [HttpPost("Register")]
-        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequestDTO newUser)
+        public async Task<IActionResult> CreateUser([FromForm] CreateUserRequestDTO newUser)
         {
-            var response = new ApiResponse();
+            ApiResponse response = new ApiResponse();
 
             if (!ModelState.IsValid)
             {
@@ -43,12 +44,20 @@ namespace EcomAPI.Controllers
                     response.Message = "User already exists with this email.";
                     return BadRequest(response);
                 }
-                int id = await _usersService.CreateUser(newUser);
+
+                ServiceResult<int> result = await _usersService.CreateUser(newUser);
+
+                if (!result.Success)
+                {
+                    response.Status = 400;
+                    response.Message = result.Message;
+                    return BadRequest(response);
+                }
 
                 response.Success = true;
                 response.Status = 200;
                 response.Message = "User created.";
-                response.Data = new { UserCreatedId = id };
+                response.Data = result.Data;
 
                 return Ok(response);
             }
@@ -61,6 +70,8 @@ namespace EcomAPI.Controllers
                 return StatusCode(500, response);
             }
         }
+
+        [EnableRateLimiting("fixed")]
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO loginRequest)
         {
@@ -122,6 +133,7 @@ namespace EcomAPI.Controllers
                 return StatusCode(500, response);
             }
         }
+
         [Authorize]
         [HttpPost("ChangePassword")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO changePasswordRequest)
@@ -164,6 +176,7 @@ namespace EcomAPI.Controllers
                 return StatusCode(500, response);
             }
         }
+
         [Authorize]
         [HttpGet("GetUserProfile/{userId}")]
         public async Task<IActionResult> GetUserProfile([FromRoute] int userId)
@@ -192,6 +205,7 @@ namespace EcomAPI.Controllers
                 return StatusCode(500, response);
             }
         }
+
         [Authorize]
         [HttpDelete("DeleteUser/{userId}")]
         public async Task<IActionResult> DeleteUser([FromRoute] int userId)

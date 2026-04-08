@@ -1,19 +1,30 @@
 ﻿using EcomAPI;
-using Microsoft.Data.SqlClient;
-using System.Data;
 using EcomAPI.Interfaces;
 using EcomAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
+using System.Data;
 
 
 // TO DO LIST:
 // 1. CREATE PRODUCTS AND ORDERS TABLES AND THEIR RESPECTIVE ENDPOINTS
 // 2. ADD ENDPOINT TO UPDATE USER DETAILS
-// 3. ADD RATE LIMITNG TO APIS
-// 4. ADD IMAGE HANDELING FOR USER REGISTRATION + ADD UPDATE PROFILE API
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("fixed", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 10;
+        opt.QueueLimit = 0;
+    });
+
+    options.RejectionStatusCode = 429;
+});
 
 // Add services to the container.
 builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
@@ -21,11 +32,10 @@ builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
     options.SuppressModelStateInvalidFilter = true;
 });
 
-builder.Services.AddScoped<IDbConnection>(sp =>  new SqlConnection(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
+builder.Services.AddScoped<IDbConnection>(sp => new SqlConnection(builder.Configuration.GetConnectionString("DefaultSQLConnection")));
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IProductCategoriesService, ProductCategoriesService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IProductsService, ProductsService>();
 
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 
@@ -69,6 +79,8 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseRateLimiter();
 
 app.MapControllers();
 

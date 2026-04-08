@@ -22,7 +22,7 @@ namespace EcomAPI.DTOs
         public string Address { get; set; }
         [Required]
         public string PhoneNumber { get; set; }
-        public string ProfilePhoto { get; set; }
+        public IFormFile ProfilePhoto { get; set; }
         public string Country { get; set; }
 
     }

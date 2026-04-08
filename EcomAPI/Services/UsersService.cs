@@ -3,6 +3,7 @@ using Dapper;
 using EcomAPI.DTOs;
 using EcomAPI.Entities;
 using EcomAPI.Interfaces;
+using EcomAPI.Responses;
 
 namespace EcomAPI.Services
 {
@@ -13,8 +14,25 @@ namespace EcomAPI.Services
         {
             _db = db;
         }
-        public async Task<int> CreateUser(CreateUserRequestDTO user)
+        public async Task<ServiceResult<int>> CreateUser(CreateUserRequestDTO user)
         {
+            var ProfilePhoto = user.ProfilePhoto;
+
+            if (ProfilePhoto.Length > 5 * 1024 * 1024) {
+                return ServiceResult<int>.Fail("File size exceeds 5MB limit");
+            }
+
+            var allowedTypes = new[] { "image/jpeg", "image/png" };
+
+            if (!allowedTypes.Contains(ProfilePhoto.ContentType))
+            {
+                return ServiceResult<int>.Fail("Only JPEG and PNG images are allowed");
+            }
+
+            var imagePath = Path.Combine("wwwroot/uploads", ProfilePhoto.FileName);
+            using var stream = new FileStream(imagePath, FileMode.Create);
+            await ProfilePhoto.CopyToAsync(stream);
+
             User usersParams = new User
             {
                 FirstName = user.FirstName,
@@ -23,8 +41,8 @@ namespace EcomAPI.Services
                 Email = user.Email,
                 Role = user.Role,
                 Address = user.Address,
-                ProfilePhoto = user.ProfilePhoto,
-                PhoneNumber = user.ProfilePhoto,
+                ProfilePhoto = imagePath,
+                PhoneNumber = imagePath,
                 Country = user.Country,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
@@ -34,40 +52,40 @@ namespace EcomAPI.Services
                       VALUES (@FirstName, @LastName, @Password, @Email, @Role, @Address, @ProfilePhoto, @PhoneNumber, @Country, @CreatedAt, @UpdatedAt)
                       SELECT CAST(SCOPE_IDENTITY() as int)";
 
-            return await _db.QuerySingleAsync<int>(sql, usersParams);
+            int newUserId = await _db.QuerySingleAsync<int>(sql, usersParams);
+            return ServiceResult<int>.Ok(newUserId);
 
         }
 
-        public async Task<User?> GetUserByEmail(string email)
+        public async Task<ServiceResult<User>> GetUserByEmail(string email)
         {
             var sql = "SELECT * FROM Users WHERE Email = @Email";
-            return await _db.QueryFirstOrDefaultAsync<User>(sql, new { Email = email });
+            var user =  await _db.QueryFirstOrDefaultAsync<User>(sql, new { Email = email });
+            return ServiceResult<User>.Ok(user);
         }
 
-        public async Task<UserProfileResponseDTO?> GetUserProfile(int userId)
+        public async Task<ServiceResult<UserProfileResponseDTO>> GetUserProfile(int userId)
         {
             var sql = @"SELECT Id, FirstName, Password, LastName, Email, Role, UpdatedAt, CreatedAt, ProfilePhoto, Country, PhoneNumber
                        FROM Users
                        WHERE Id = @Id";
 
-            return await _db.QueryFirstOrDefaultAsync<UserProfileResponseDTO>(sql, new { Id = userId });
+            var profile = await _db.QueryFirstOrDefaultAsync<UserProfileResponseDTO>(sql, new { Id = userId });
+            return ServiceResult<UserProfileResponseDTO>.Ok(profile);
         }
 
-        public async Task<PasswordChangeResult> ChangePassword(ChangePasswordDTO newPasswordRequest)
+        public async Task<ServiceResult<bool>> ChangePassword(ChangePasswordDTO newPasswordRequest)
         {
             var user = await GetUserByEmail(newPasswordRequest.Email);
-            PasswordChangeResult result = new PasswordChangeResult();
 
             if (user == null)
             {
-                result.Message = "User not found";
-                return result;
+                return ServiceResult<bool>.Fail("User not found");
             }
 
-            if (!BCrypt.Net.BCrypt.Verify(newPasswordRequest.CurrentPassword, user.Password))
+            if (!BCrypt.Net.BCrypt.Verify(newPasswordRequest.CurrentPassword, user.Data.Password))
             {
-                result.Message = "Current password is incorrect";
-                return result;
+                return ServiceResult<bool>.Fail("Current password is incorrect");
             }
 
             var hashedNewPassword = BCrypt.Net.BCrypt.HashPassword(newPasswordRequest.NewPassword);
@@ -81,29 +99,21 @@ namespace EcomAPI.Services
                 Email = newPasswordRequest.Email
             });
 
-            if(rowsAffected == 0)
-            {
-                result.Message = "Password update failed";
-                return result;
-            }
-
-            result.Success = true;
-            result.Message = "Password updated successfully";
-            return result;
+            return ServiceResult<bool>.Ok(rowsAffected > 0);
         }
 
-        public async Task<bool> DeleteUser(int userId)
+        public async Task<ServiceResult<bool>> DeleteUser(int userId)
         {
             var user = await GetUserProfile(userId);
 
             if(user == null)
             {
-                return false;
+                return ServiceResult<bool>.Fail("Deletion Failed");
             } else
             {
                 var sql = "DELETE FROM Users WHERE Id = @Id";
                 var affectedRows = await _db.ExecuteAsync(sql, new { Id = userId });
-                return affectedRows > 0;
+                return ServiceResult<bool>.Ok(affectedRows > 0);
             }
         }
     }
