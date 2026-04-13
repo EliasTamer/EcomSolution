@@ -18,6 +18,33 @@ namespace EcomAPI.Services
             _mapper = mapper;
         }
 
+        public async Task<ServiceResult<List<ProductCategory>>> GetProductCategories(PaginationParams pagination)
+        {
+            try
+            {
+                var allowedColumns = new HashSet<string> { "Id", "Title", "CreatedAt", "UpdatedAt" };
+                var column = allowedColumns.Contains(pagination.SortBy) ? pagination.SortBy : "Id";
+                var direction = pagination.SortOrder.Equals("DESC", StringComparison.OrdinalIgnoreCase) ? "DESC" : "ASC";
+
+                var sql = $@"SELECT Title, Description, ImageUrl, CreatedAt, UpdatedAt
+                            FROM ProductCategories
+                            ORDER BY {column} {direction}
+                            OFFSET @Skip ROWS
+                            FETCH NEXT @Take ROWS ONLY;";
+
+                var results = await _db.QueryAsync<ProductCategory>(sql, new
+                {
+                    Skip = (pagination.Page - 1) * pagination.PageSize,
+                    Take = pagination.PageSize
+                });
+
+                return ServiceResult<List<ProductCategory>>.Ok(results.ToList());
+            }
+            catch (Exception ex) {
+                return ServiceResult<List<ProductCategory>>.Fail("Database operation failed");
+            }
+        }
+
         public async Task<ServiceResult<int>> CreateProductCategory(CreateProductCategoryDTO category)
         {
             ProductCategory productCategory = _mapper.Map<ProductCategory>(category);

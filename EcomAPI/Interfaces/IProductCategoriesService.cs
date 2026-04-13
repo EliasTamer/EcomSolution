@@ -6,6 +6,7 @@ namespace EcomAPI.Interfaces
 {
     public interface IProductCategoriesService
     {
+        public Task<ServiceResult<List<ProductCategory>>> GetProductCategories(PaginationParams pagination);
         public Task<ServiceResult<int>> CreateProductCategory(CreateProductCategoryDTO category); 
         public Task<ServiceResult<bool>> DeleteProductCategory (int id);
         public Task<ServiceResult<ProductCategory>> GetProductCategoryDetails(int id);

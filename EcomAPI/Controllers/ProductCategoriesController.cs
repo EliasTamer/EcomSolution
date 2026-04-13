@@ -4,6 +4,7 @@ using EcomAPI.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
+using System.Formats.Asn1;
 
 namespace EcomAPI.Controllers
 {
@@ -16,6 +17,13 @@ namespace EcomAPI.Controllers
         public ProductCategoriesController(IProductCategoriesService productCategoriesService)
         {
             _productCategoriesService = productCategoriesService;
+        }
+
+        [Authorize]
+        [HttpGet("ProductCategoriesListing")]
+        public async Task<IActionResult> GetProductCategoriesListing([FromQuery] PaginationParams pagination)
+        {
+
         }
 
         [Authorize]
