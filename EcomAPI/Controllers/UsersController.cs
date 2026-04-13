@@ -90,7 +90,8 @@ namespace EcomAPI.Controllers
 
             try
             {
-                var user = await _usersService.GetUserByEmail(loginRequest.Email);
+                var userResponse = await _usersService.GetUserByEmail(loginRequest.Email);
+                var user = userResponse.Data;
 
                 if (user == null)
                 {
@@ -181,16 +182,19 @@ namespace EcomAPI.Controllers
         [HttpGet("GetUserProfile/{userId}")]
         public async Task<IActionResult> GetUserProfile([FromRoute] int userId)
         {
-            ApiResponse response = new ApiResponse();
+            var response = new ApiResponse();
             try
             {
-                var userProfile = await _usersService.GetUserProfile(userId);
+                var userProfileResponse = await _usersService.GetUserProfile(userId);
+                var userProfile = userProfileResponse.Data;
+
                 if (userProfile == null)
                 {
                     response.Status = 404;
                     response.Message = "User not found";
                     return NotFound(response);
                 }
+
                 response.Success = true;
                 response.Status = 200;
                 response.Message = "User profile retrieved successfully";
@@ -211,9 +215,9 @@ namespace EcomAPI.Controllers
         public async Task<IActionResult> DeleteUser([FromRoute] int userId)
         {
             ApiResponse response = new ApiResponse();
-            bool isDeleted = await _usersService.DeleteUser(userId);
+            var isDeletedResponse = await _usersService.DeleteUser(userId);
 
-            if (!isDeleted)
+            if (!isDeletedResponse.Success)
             {
                 response.Status = 400;
                 response.Message = "User deletion failed.";

@@ -3,6 +3,7 @@ using Dapper;
 using EcomAPI.DTOs;
 using EcomAPI.Entities;
 using EcomAPI.Interfaces;
+using EcomAPI.Responses;
 using System.Data;
 
 namespace EcomAPI.Services
@@ -17,53 +18,102 @@ namespace EcomAPI.Services
             _mapper = mapper;
         }
 
-        public async Task<int> CreateProductCategory(CreateProductCategoryDTO category)
+        public async Task<ServiceResult<int>> CreateProductCategory(CreateProductCategoryDTO category)
         {
-            ProductCategory productCategory = new ProductCategory()
+            ProductCategory productCategory = _mapper.Map<ProductCategory>(category);
+
+            try
             {
-                Title = category.Title,
-                Description = category.Description,
-                ImageUrl = category.ImageUrl,
-            };
+                var sql = @"INSERT INTO ProductCategories(Title, Description, ImageUrl)
+                          VALUES(@Title, @Description, @ImageUrl);
+                          SELECT CAST(SCOPE_IDENTITY() as int);";
 
-            var sql = @"INSERT INTO ProductCategories(Title, Description, ImageUrl)
-                      VALUES(@Title, @Description, @ImageUrl)
-                      SELECT CAST(SCOPE_IDENTITY() as int)";
+                var productCategoryId = await _db.QuerySingleAsync<int>(sql, productCategory);
+                return ServiceResult<int>.Ok(productCategoryId);
 
-            return await _db.QuerySingleAsync<int>(sql, productCategory);
-
-        }
-
-        public async Task<int> DeleteProductCategory(int categoryId)
-        {
-            var sql = @"DELETE FROM ProductCategories WHERE Id = @categoryId";
-            return await _db.ExecuteAsync(sql, new { categoryId = categoryId });
-        }
-
-        public async Task<ProductCategory?> GetProductCategoryDetails(int categoryId)
-        {
-            var sql = @"SELECT * FROM ProductCategories WHERE Id = @categoryId";
-            return await _db.QueryFirstOrDefaultAsync<ProductCategory?>(sql, new { categoryId = categoryId });
-        }
-
-        public async Task<bool> EditProductCategory(int id, PatchProductCategoryDTO updatedCategory)
-        {
-            var categoryToUpdate = await GetProductCategoryDetails(id);
-            if(categoryToUpdate == null)
+            }
+            catch (Exception ex)
             {
-                return false;
+                return ServiceResult<int>.Fail("Category creation failed");
+            }
+        }
+
+        public async Task<ServiceResult<bool>> DeleteProductCategory(int categoryId)
+        {
+            try
+            {
+                var sql = @"DELETE FROM ProductCategories WHERE Id = @categoryId";
+                var affectedRows = await _db.ExecuteAsync(sql, new { categoryId });
+
+                if (affectedRows == 1)
+                {
+                    return ServiceResult<bool>.Ok(true);
+                }
+                else
+                {
+                    return ServiceResult<bool>.Fail("Product not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<bool>.Fail("Database operation failed");
             }
 
-            _mapper.Map(updatedCategory, categoryToUpdate);
-            categoryToUpdate.UpdatedAt = DateTime.Now;
+        }
 
-            var sql = @"UPDATE ProductCategories
-                      SET Title = @Title, Description = @Description, ImageUrl = @ImageUrl, UpdatedAt = @UpdatedAt
-                      WHERE Id = @Id";
+        public async Task<ServiceResult<ProductCategory>> GetProductCategoryDetails(int categoryId)
+        {
+            try
+            {
+                var sql = @"SELECT Id, Title, Description, ImageUrl, CreatedAt, UpdatedAt
+                        FROM ProductCategories WHERE Id = @categoryId";
 
-            var rowsAffected = await _db.ExecuteAsync(sql, categoryToUpdate);
-            return rowsAffected > 0;
+                var result = await _db.QueryFirstOrDefaultAsync<ProductCategory?>(sql, new { categoryId });
+                if (result == null)
+                {
+                    return ServiceResult<ProductCategory>.Fail("Category not found");
+                }
+                else
+                {
+                    return ServiceResult<ProductCategory>.Ok(result);
+                }
             }
-        } 
+            catch (Exception ex)
+            {
+                return ServiceResult<ProductCategory>.Fail("Database operation failed");
+            }
+        }
+
+        public async Task<ServiceResult<bool>> EditProductCategory(int id, PatchProductCategoryDTO updatedCategory)
+        {
+            try
+            {
+                var sql = @"UPDATE ProductCategories
+                SET Title = COALESCE(@Title, Title),
+                    Description = COALESCE(@Description, Description),
+                    ImageUrl = COALESCE(@ImageUrl, ImageUrl),
+                    UpdatedAt = @UpdatedAt
+                WHERE Id = @Id";
+
+                var parameters = new
+                {
+                    Id = id,
+                    updatedCategory.Title,
+                    updatedCategory.Description,
+                    updatedCategory.ImageUrl,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                var rowsAffected = await _db.ExecuteAsync(sql, parameters);
+                return rowsAffected > 0
+                ? ServiceResult<bool>.Ok(true)
+                : ServiceResult<bool>.Fail("Category not found or update failed");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<bool>.Fail("Database operation failed");
+            }
+        }
+
     }
-
+}

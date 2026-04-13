@@ -36,13 +36,22 @@ namespace EcomAPI.Controllers
 
             try
             {
-                var createdId = await _productCategoriesService.CreateProductCategory(category);
+                var createdProductResponse = await _productCategoriesService.CreateProductCategory(category);
 
-                response.Status = 200;
-                response.Success = true;
-                response.Message = "Product category created successfuly.";
-                response.Data = new { productCategoryId =  createdId };
-                return Ok(response);
+                if (createdProductResponse.Success) {
+                    response.Status = 200;
+                    response.Success = true;
+                    response.Message = "Product category created successfuly.";
+                    response.Data = new { productCategoryId = createdProductResponse.Data };
+                    return Ok(response);
+                }
+                else
+                {
+                    response.Status = 400;
+                    response.Message = "Error occured when creating product category";
+                    return BadRequest(response);
+                }
+
             }
             catch (Exception ex) { 
                 response.Status =500;
@@ -59,9 +68,9 @@ namespace EcomAPI.Controllers
 
             try
             {
-                var affectedRows = await _productCategoriesService.DeleteProductCategory(categoryId);
+                var deletedProductCategoryResponse = await _productCategoriesService.DeleteProductCategory(categoryId);
 
-                if(affectedRows > 0)
+                if(deletedProductCategoryResponse.Success)
                 {
                     response.Success = true;
                     response.Status = 200;
@@ -69,9 +78,9 @@ namespace EcomAPI.Controllers
                     return Ok(response);
                 } else
                 {
-                    response.Status = 404;
-                    response.Message = "Product doesn't exist";
-                    return NotFound(response);
+                    response.Status = 400;
+                    response.Message = "Product deletion failed.";
+                    return BadRequest(response);
                 }
             }
             catch (Exception ex) {

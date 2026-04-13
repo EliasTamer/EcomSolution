@@ -1,13 +1,14 @@
 ﻿using EcomAPI.DTOs;
 using EcomAPI.Entities;
+using EcomAPI.Responses;
 
 namespace EcomAPI.Interfaces
 {
     public interface IProductCategoriesService
     {
-        public Task<int> CreateProductCategory(CreateProductCategoryDTO category); 
-        public Task<int> DeleteProductCategory (int id);
-        public Task<ProductCategory?> GetProductCategoryDetails(int id);
-        public Task<bool> EditProductCategory(int id, PatchProductCategoryDTO category);
+        public Task<ServiceResult<int>> CreateProductCategory(CreateProductCategoryDTO category); 
+        public Task<ServiceResult<bool>> DeleteProductCategory (int id);
+        public Task<ServiceResult<ProductCategory>> GetProductCategoryDetails(int id);
+        public Task<ServiceResult<bool>> EditProductCategory(int id, PatchProductCategoryDTO category);
     }
 }
