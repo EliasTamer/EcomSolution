@@ -18,7 +18,8 @@ namespace EcomAPI.Services
         {
             var ProfilePhoto = user.ProfilePhoto;
 
-            if (ProfilePhoto.Length > 5 * 1024 * 1024) {
+            if (ProfilePhoto.Length > 5 * 1024 * 1024)
+            {
                 return ServiceResult<int>.Fail("File size exceeds 5MB limit");
             }
 
@@ -54,13 +55,12 @@ namespace EcomAPI.Services
 
             int newUserId = await _db.QuerySingleAsync<int>(sql, usersParams);
             return ServiceResult<int>.Ok(newUserId);
-
         }
 
         public async Task<ServiceResult<User>> GetUserByEmail(string email)
         {
             var sql = "SELECT * FROM Users WHERE Email = @Email";
-            var user =  await _db.QueryFirstOrDefaultAsync<User>(sql, new { Email = email });
+            var user = await _db.QueryFirstOrDefaultAsync<User>(sql, new { Email = email });
             return ServiceResult<User>.Ok(user);
         }
 
@@ -106,15 +106,14 @@ namespace EcomAPI.Services
         {
             var user = await GetUserProfile(userId);
 
-            if(user == null)
+            if (user == null)
             {
                 return ServiceResult<bool>.Fail("Deletion Failed");
-            } else
-            {
-                var sql = "DELETE FROM Users WHERE Id = @Id";
-                var affectedRows = await _db.ExecuteAsync(sql, new { Id = userId });
-                return ServiceResult<bool>.Ok(affectedRows > 0);
             }
+
+            var sql = "DELETE FROM Users WHERE Id = @Id";
+            var affectedRows = await _db.ExecuteAsync(sql, new { Id = userId });
+            return ServiceResult<bool>.Ok(affectedRows > 0);
         }
     }
 }

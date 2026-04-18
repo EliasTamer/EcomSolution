@@ -31,44 +31,31 @@ namespace EcomAPI.Controllers
                 response.Errors = ModelState.Values.SelectMany(v => v.Errors)
                                   .Select(e => e.ErrorMessage)
                                   .ToList();
-
                 return BadRequest(response);
             }
 
-            try
+            var getUserResult = await _usersService.GetUserByEmail(newUser.Email);
+            if (getUserResult.Data != null)
             {
-                var userFound = await _usersService.GetUserByEmail(newUser.Email);
-                if (userFound != null)
-                {
-                    response.Status = 400;
-                    response.Message = "User already exists with this email.";
-                    return BadRequest(response);
-                }
-
-                ServiceResult<int> result = await _usersService.CreateUser(newUser);
-
-                if (!result.Success)
-                {
-                    response.Status = 400;
-                    response.Message = result.Message;
-                    return BadRequest(response);
-                }
-
-                response.Success = true;
-                response.Status = 200;
-                response.Message = "User created.";
-                response.Data = result.Data;
-
-                return Ok(response);
+                response.Status = 400;
+                response.Message = "User already exists with this email.";
+                return BadRequest(response);
             }
-            catch (Exception ex)
+
+            var createUserResult = await _usersService.CreateUser(newUser);
+
+            if (!createUserResult.Success)
             {
-                response.Status = 500;
-                response.Message = "An error occurred while creating the user.";
-                response.Errors = new List<string> { ex.Message };
-
-                return StatusCode(500, response);
+                response.Status = 400;
+                response.Message = createUserResult.Message;
+                return BadRequest(response);
             }
+
+            response.Success = true;
+            response.Status = 200;
+            response.Message = "User created.";
+            response.Data = createUserResult.Data;
+            return Ok(response);
         }
 
         [EnableRateLimiting("fixed")]
@@ -84,55 +71,43 @@ namespace EcomAPI.Controllers
                 response.Errors = ModelState.Values.SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
                     .ToList();
-
                 return BadRequest(response);
             }
 
-            try
+            var getUserResult = await _usersService.GetUserByEmail(loginRequest.Email);
+            var user = getUserResult.Data;
+
+            if (user == null)
             {
-                var userResponse = await _usersService.GetUserByEmail(loginRequest.Email);
-                var user = userResponse.Data;
-
-                if (user == null)
-                {
-                    response.Status = 401;
-                    response.Message = "Invalid email or password";
-                    return Unauthorized(response);
-                }
-
-                if (!BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
-                {
-                    response.Status = 401;
-                    response.Message = "Invalid email or password";
-                    return Unauthorized(response);
-                }
-
-                var token = _jwtService.GenerateToken(user);
-                response.Success = true;
-                response.Status = 200;
-                response.Message = "Login succesful.";
-                response.Data = new
-                {
-                    Token = token,
-                    User = new
-                    {
-                        user.Id,
-                        user.Email,
-                        user.FirstName,
-                        user.LastName,
-                        user.Role
-                    }
-                };
-
-                return Ok(response);
+                response.Status = 401;
+                response.Message = "Invalid email or password";
+                return Unauthorized(response);
             }
-            catch (Exception ex)
+
+            if (!BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
             {
-                response.Status = 500;
-                response.Message = "An error occurred during login.";
-                response.Errors = new List<string> { ex.Message };
-                return StatusCode(500, response);
+                response.Status = 401;
+                response.Message = "Invalid email or password";
+                return Unauthorized(response);
             }
+
+            var token = _jwtService.GenerateToken(user);
+            response.Success = true;
+            response.Status = 200;
+            response.Message = "Login succesful.";
+            response.Data = new
+            {
+                Token = token,
+                User = new
+                {
+                    user.Id,
+                    user.Email,
+                    user.FirstName,
+                    user.LastName,
+                    user.Role
+                }
+            };
+            return Ok(response);
         }
 
         [Authorize]
@@ -148,34 +123,22 @@ namespace EcomAPI.Controllers
                 response.Errors = ModelState.Values.SelectMany(v => v.Errors)
                                   .Select(e => e.ErrorMessage)
                                   .ToList();
-
                 return BadRequest(response);
             }
 
-            try
+            var changePasswordResult = await _usersService.ChangePassword(changePasswordRequest);
+
+            if (!changePasswordResult.Success)
             {
-                var result = await _usersService.ChangePassword(changePasswordRequest);
-
-                if (!result.Success)
-                {
-                    response.Status = 400;
-                    response.Message = result.Message;
-                    return BadRequest(response);
-                }
-
-                response.Success = true;
-                response.Status = 200;
-                response.Message = result.Message;
-
-                return Ok(response);
+                response.Status = 400;
+                response.Message = changePasswordResult.Message;
+                return BadRequest(response);
             }
-            catch (Exception ex)
-            {
-                response.Status = 500;
-                response.Message = "An error occured";
-                response.Errors = new List<string> { ex.Message };
-                return StatusCode(500, response);
-            }
+
+            response.Success = true;
+            response.Status = 200;
+            response.Message = changePasswordResult.Message;
+            return Ok(response);
         }
 
         [Authorize]
@@ -183,31 +146,21 @@ namespace EcomAPI.Controllers
         public async Task<IActionResult> GetUserProfile([FromRoute] int userId)
         {
             var response = new ApiResponse();
-            try
-            {
-                var userProfileResponse = await _usersService.GetUserProfile(userId);
-                var userProfile = userProfileResponse.Data;
 
-                if (userProfile == null)
-                {
-                    response.Status = 404;
-                    response.Message = "User not found";
-                    return NotFound(response);
-                }
+            var getUserProfileResult = await _usersService.GetUserProfile(userId);
 
-                response.Success = true;
-                response.Status = 200;
-                response.Message = "User profile retrieved successfully";
-                response.Data = userProfile;
-                return Ok(response);
-            }
-            catch (Exception ex)
+            if (getUserProfileResult.Data == null)
             {
-                response.Status = 500;
-                response.Message = "An error occurred while retrieving the user profile.";
-                response.Errors = new List<string> { ex.Message };
-                return StatusCode(500, response);
+                response.Status = 404;
+                response.Message = "User not found";
+                return NotFound(response);
             }
+
+            response.Success = true;
+            response.Status = 200;
+            response.Message = "User profile retrieved successfully";
+            response.Data = getUserProfileResult.Data;
+            return Ok(response);
         }
 
         [Authorize]
@@ -215,19 +168,18 @@ namespace EcomAPI.Controllers
         public async Task<IActionResult> DeleteUser([FromRoute] int userId)
         {
             ApiResponse response = new ApiResponse();
-            var isDeletedResponse = await _usersService.DeleteUser(userId);
+            var deleteUserResult = await _usersService.DeleteUser(userId);
 
-            if (!isDeletedResponse.Success)
+            if (!deleteUserResult.Success)
             {
                 response.Status = 400;
                 response.Message = "User deletion failed.";
                 return BadRequest(response);
-            } else
-            {
-                response.Success = true;
-                response.Message = "User deleted successfuly";
-                return Ok(response);
             }
+
+            response.Success = true;
+            response.Message = "User deleted successfuly";
+            return Ok(response);
         }
     }
 }

@@ -11,9 +11,6 @@ using System.Data;
 // TO DO LIST:
 // 1. CREATE PRODUCTS AND ORDERS TABLES AND THEIR RESPECTIVE ENDPOINTS
 // 2. ADD ENDPOINT TO UPDATE USER DETAILS
-// 3. ADD EXCEPTIONS IN USER SERVICE
-// 4.UPDATE PRODUCT CATEGORIES CONTROLLER TO REFLECT SERVICE CHANGES
-// 5. CREATE THE GET PRODUCT CATEGORIES API WITH PAGINATION
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,6 +67,31 @@ builder.Services.AddAuthorization();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+app.UseExceptionHandler(appError =>
+{
+    appError.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
+
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        var ex = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>().Error;
+
+        logger.LogError(ex,
+            "Unhandled exception on {Method} {Path}",
+            context.Request.Method,
+            context.Request.Path);
+
+        var response = new EcomAPI.Responses.ApiResponse
+        {
+            Status = 500,
+            Message = "An unexpected error occurred"
+        };
+
+        await context.Response.WriteAsJsonAsync(response);
+    });
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
