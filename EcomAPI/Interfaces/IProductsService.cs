@@ -6,6 +6,6 @@ namespace EcomAPI.Interfaces
 {
     public interface IProductsService
     {
-        Task<ServiceResult<List<Product>>> GetProducts(PaginationParams pagination);
+        Task<ServiceResult<List<Product>>> GetProducts(ProductListingFilters filters);
     }
 }

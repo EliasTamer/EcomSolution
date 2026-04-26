@@ -14,19 +14,57 @@ namespace EcomAPI.Services
             _db = db;
         }
 
-        public async Task<ServiceResult<List<Product>>> GetProducts(PaginationParams pagination)
+        public async Task<ServiceResult<List<Product>>> GetProducts(ProductListingFilters filters)
         {
-            var allowedColumns = new HashSet<String> { "Id", "Name", "Description", "Price", "StockQuantity", "CreatedAt", "UpdatedAt" };
-            var column = allowedColumns.Contains(pagination.SortBy) ? pagination.SortBy : "Id";
-            var direction = pagination.SortOrder.Equals("DESC", StringComparison.OrdinalIgnoreCase) ? "DESC" : "ASC";
+            var allowedColumns = new HashSet<string> { "Id", "Name", "Description", "Price", "StockQuantity", "CreatedAt", "UpdatedAt" };
+            var column = allowedColumns.Contains(filters.SortBy) ? filters.SortBy : "Id";
+            var direction = filters.SortOrder.Equals("DESC", StringComparison.OrdinalIgnoreCase) ? "DESC" : "ASC";
 
-            var sql = $@"SELECT * 
+            var conditions = new List<string>();
+            var parameters = new DynamicParameters();
+
+            if(filters.MinPrice != null)
+            {
+                conditions.Add("Price >= @MinPrice");
+                parameters.Add("MinPrice", filters.MinPrice);
+            }
+
+            if (filters.MaxPrice != null) {
+                conditions.Add("Price <= @MaxPrice");
+                parameters.Add("MaxPrice", filters.MaxPrice);
+            }
+
+            if (filters.CategoryId != null) {
+                conditions.Add("CategoryId = @CategoryId");
+                parameters.Add("CategoryId", filters.CategoryId);
+            }
+
+            if (filters.IsAvailable != null)
+            {
+                conditions.Add("IsAvailable = @IsAvailable");
+                parameters.Add("IsAvailable", filters.IsAvailable);
+            }
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                conditions.Add("Name LIKE @Search");
+                parameters.Add("Search", $"%{filters.Search}%");
+            }
+
+            var whereClause = conditions.Count > 0 ? "WHERE" + string.Join(" AND ", conditions) : "";
+
+
+            var sql = $@"SELECT Id, Name, Description, Price, CategoryId, ImageUrl, StockQuantity, IsAvailable, CreatedAt, UpdatedAt
                         From Products
+                        {whereClause}
                         ORDER BY {column} {direction}
                         OFFSET @Skip ROWS
                         FETCH NEXT @Take ROWS ONLY;";
 
-            var results = await _db.QueryAsync<Product>(sql, new { Skip = (pagination.Page - 1) * pagination.PageSize , Take = pagination.PageSize });
+            parameters.Add("Skip", (filters.Page - 1) * filters.PageSize);
+            parameters.Add("Take", filters.PageSize);
+
+            var results = await _db.QueryAsync<Product>(sql, parameters);
             return ServiceResult<List<Product>>.Ok(results.ToList());
         }
     }
