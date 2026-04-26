@@ -7,5 +7,6 @@ namespace EcomAPI.Interfaces
     public interface IProductsService
     {
         Task<ServiceResult<List<Product>>> GetProducts(ProductListingFilters filters);
+        Task<ServiceResult<int>> CreateProduct(CreateProductDTO product);
     }
 }

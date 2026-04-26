@@ -4,6 +4,7 @@ using EcomAPI.Entities;
 using EcomAPI.Interfaces;
 using EcomAPI.Responses;
 using System.Data;
+using System.Reflection.Metadata.Ecma335;
 
 namespace EcomAPI.Services
 {
@@ -67,5 +68,35 @@ namespace EcomAPI.Services
             var results = await _db.QueryAsync<Product>(sql, parameters);
             return ServiceResult<List<Product>>.Ok(results.ToList());
         }
+
+        public async Task<ServiceResult<int>> CreateProduct(CreateProductDTO product)
+        {
+            var sql = @"INSERT INTO Products(Name, Description, Price, CategoryId, ImageUrl, StockQuantity, IsAvailable)
+                        VALUES(@Name, @Description, @Price, @CategoryId, @ImageUrl, @StockQuantity, @IsAvailable) 
+                        SELECT CAST(SCOPE_IDENTITY() as int);";
+
+            var parameters = new DynamicParameters();
+            parameters.Add("Name", product.Name);
+            parameters.Add("Description", product.Description);
+            parameters.Add("Price", product.Price);
+            parameters.Add("CategoryId", product.CategoryId);
+            parameters.Add("ImageUrl", product.ImageUrl);
+            parameters.Add("StockQuantity", product.StockQuantity);
+            parameters.Add("IsAvailable", product.StockQuantity > 0);
+
+            int result = await _db.ExecuteAsync(sql, parameters);
+            return ServiceResult<int>.Ok(result);
+
+        }
+
+        public async Task<ServiceResult<bool>> DeleteProduct(int Id)
+        {
+            var sql = @"DELETE FROM Product 
+                        WHERE Id = @Id";
+
+            var affectedRows = await _db.ExecuteAsync(sql, new { Id});
+            return affectedRows > 0 ? ServiceResult<bool>.Ok(true) : ServiceResult<bool>.Fail("Product not found");
+        }
+
     }
 }

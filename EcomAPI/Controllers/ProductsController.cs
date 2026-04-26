@@ -46,5 +46,23 @@ namespace EcomAPI.Controllers
             response.Message = result.Message;
             return BadRequest(response);
         }
+        [Authorize]
+        [HttpPost("CreateProduct")]
+        public async Task<IActionResult> CreateProduct([FromBody] CreateProductDTO)
+        {
+            ApiResponse response = new ApiResponse();
+
+            if (!ModelState.IsValid)
+            {
+                response.Status = 400;
+                response.Message = "Validation failed.";
+                response.Errors = ModelState.Values.SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return BadRequest(response);
+            }
+
+
+        }
     }
 }
