@@ -10,6 +10,6 @@ namespace EcomAPI.Interfaces
         public Task<ServiceResult<int>> CreateProductCategory(CreateProductCategoryDTO category); 
         public Task<ServiceResult<bool>> DeleteProductCategory (int id);
         public Task<ServiceResult<ProductCategory>> GetProductCategoryDetails(int id);
-        public Task<ServiceResult<bool>> EditProductCategory(int id, PatchProductCategoryDTO category);
+        public Task<ServiceResult<bool>> PatchProductCategory(int id, PatchProductCategoryDTO category);
     }
 }

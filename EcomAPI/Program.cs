@@ -13,6 +13,8 @@ using System.Data;
 // 2. IMPLEMENT ORDERS CONTROLLER
 // 3. ADD ENDPOINT TO UPDATE USER DETAILS
 // 4. ADD OTP SERVICE TO START USING IT IN MULTIPLE PLACES
+// 5. MAKE FILE CREATION AS A UTILITY CLASS TO AVOID REPETITION
+// 6. APPLY IFormFile instead of statis urls for Products as well
 
 var builder = WebApplication.CreateBuilder(args);
 

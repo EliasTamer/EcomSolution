@@ -20,7 +20,7 @@ namespace EcomAPI.Controllers
         [HttpGet("ProductListing")]
         public async Task<IActionResult> GetProductListing([FromQuery] ProductListingFilters filters)
         {
-            ApiResponse response = new ApiResponse();
+            ApiResponse response = new ();
 
             if (!ModelState.IsValid)
             {
@@ -48,9 +48,9 @@ namespace EcomAPI.Controllers
         }
         [Authorize]
         [HttpPost("CreateProduct")]
-        public async Task<IActionResult> CreateProduct([FromBody] CreateProductDTO)
+        public async Task<IActionResult> CreateProduct([FromBody] CreateProductDTO product)
         {
-            ApiResponse response = new ApiResponse();
+            ApiResponse response = new ();
 
             if (!ModelState.IsValid)
             {
@@ -62,6 +62,46 @@ namespace EcomAPI.Controllers
                 return BadRequest(response);
             }
 
+            var result = await _productService.CreateProduct(product);
+
+            if(result.Data > 0)
+            {
+                response.Success = true;
+                response.Status = 200;
+                response.Data = result.Data;
+                return Ok(response);
+            }
+
+            response.Message = "An error has occured, please try again.";
+            response.Status = 500;
+            return BadRequest(response);
+        }
+
+        [Authorize]
+        [HttpDelete("DeleteProduct/{productId}")]
+        public async Task<IActionResult> DeleteProduct([FromQuery] int productId)
+        {
+            ApiResponse response = new();
+
+            var result = await _productService.DeleteProduct(productId);
+
+            if(result.Success)
+            {
+                response.Success = true;
+                response.Status = 200;
+                response.Data = result.Data;
+                return Ok(response);
+            }
+
+            response.Status = 404;
+            response.Message = result.Message;
+            return BadRequest(response);
+        }
+
+        [Authorize]
+        [HttpPatch("PatchProduct/{productId}")]
+        public async Task<IActionResult> PatchProduct([FromQuery] int productId, [FromBody]  PatchProductDTO product)
+        {
 
         }
     }

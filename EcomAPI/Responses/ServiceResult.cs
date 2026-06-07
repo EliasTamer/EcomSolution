@@ -3,8 +3,8 @@
     public class ServiceResult<T>
     {
         public bool Success { get; set; } = false;
-        public string Message { get; set; }
-        public T Data { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public T? Data { get; set; }
 
         public static ServiceResult<T> Ok(T data) => new ServiceResult<T>
         {

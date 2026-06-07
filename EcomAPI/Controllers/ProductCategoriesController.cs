@@ -21,7 +21,7 @@ namespace EcomAPI.Controllers
         [HttpGet("ProductCategoriesListing")]
         public async Task<IActionResult> GetProductCategoriesListing([FromQuery] PaginationParams pagination)
         {
-            ApiResponse response = new ApiResponse();
+            ApiResponse response = new ();
 
             var getCategoriesResult = await _productCategoriesService.GetProductCategories(pagination);
 
@@ -42,7 +42,7 @@ namespace EcomAPI.Controllers
         [HttpPost("CreateProductCategory")]
         public async Task<IActionResult> CreateProductCategory([FromBody] CreateProductCategoryDTO category)
         {
-            ApiResponse response = new ApiResponse();
+            ApiResponse response = new ();
 
             if (!ModelState.IsValid)
             {
@@ -74,7 +74,7 @@ namespace EcomAPI.Controllers
         [HttpDelete("DeleteProductCategory/{categoryId}")]
         public async Task<IActionResult> DeleteProductCategory([FromRoute] int categoryId)
         {
-            ApiResponse response = new ApiResponse();
+            ApiResponse response = new ();
 
             var deleteCategoryResult = await _productCategoriesService.DeleteProductCategory(categoryId);
 
@@ -95,7 +95,7 @@ namespace EcomAPI.Controllers
         [HttpGet("GetProductCategoryDetails/{categoryId}")]
         public async Task<IActionResult> GetProductCategoryDetails([FromRoute] int categoryId)
         {
-            ApiResponse response = new ApiResponse();
+            ApiResponse response = new ();
 
             var getCategoryDetailsResult = await _productCategoriesService.GetProductCategoryDetails(categoryId);
 
@@ -114,9 +114,9 @@ namespace EcomAPI.Controllers
 
         [Authorize]
         [HttpPatch("EditProductCategory/{categoryId}")]
-        public async Task<IActionResult> EditProductCategory([FromRoute] int categoryId, [FromBody] PatchProductCategoryDTO updatedFields)
+        public async Task<IActionResult> EditProductCategory([FromRoute] int categoryId, [FromBody] PatchProductCategoryDTO category)
         {
-            ApiResponse response = new ApiResponse();
+            ApiResponse response = new ();
 
             if (!ModelState.IsValid)
             {
@@ -128,7 +128,7 @@ namespace EcomAPI.Controllers
                 return BadRequest(response);
             }
 
-            var editCategoryResult = await _productCategoriesService.EditProductCategory(categoryId, updatedFields);
+            var editCategoryResult = await _productCategoriesService.PatchProductCategory(categoryId, category);
 
             if (!editCategoryResult.Success)
             {

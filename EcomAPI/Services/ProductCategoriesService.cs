@@ -41,13 +41,38 @@ namespace EcomAPI.Services
 
         public async Task<ServiceResult<int>> CreateProductCategory(CreateProductCategoryDTO category)
         {
-            ProductCategory productCategory = _mapper.Map<ProductCategory>(category);
+            var CategoryPhoto = category.ImageUrl;
+            var imagePath = string.Empty;
+
+            if(CategoryPhoto != null)
+            {
+                if (CategoryPhoto.Length > 5 * 1024 * 1024)
+                {
+                    return ServiceResult<int>.Fail("File size exceeds 5MB limit");
+                }
+
+                var allowedTypes = new[] { "image/jpeg", "image/png" };
+
+                if (!allowedTypes.Contains(CategoryPhoto.ContentType))
+                {
+                    return ServiceResult<int>.Fail("Only JPEG and PNG images are allowed");
+                }
+
+                imagePath = Path.Combine("wwwroot/uploads", CategoryPhoto.FileName);
+                using var stream = new FileStream(imagePath, FileMode.Create);
+                await CategoryPhoto.CopyToAsync(stream);
+            }
 
             var sql = @"INSERT INTO ProductCategories(Title, Description, ImageUrl)
                       VALUES(@Title, @Description, @ImageUrl);
                       SELECT CAST(SCOPE_IDENTITY() as int);";
 
-            var productCategoryId = await _db.QuerySingleAsync<int>(sql, productCategory);
+            var productCategoryId = await _db.QuerySingleAsync<int>(sql, new
+            {
+                Title = category.Title,
+                Description = category.Description,
+                ImageUrl = imagePath,
+            });
             return ServiceResult<int>.Ok(productCategoryId);
         }
 
@@ -73,21 +98,43 @@ namespace EcomAPI.Services
                 : ServiceResult<ProductCategory>.Fail("Category not found");
         }
 
-        public async Task<ServiceResult<bool>> EditProductCategory(int id, PatchProductCategoryDTO updatedCategory)
+        public async Task<ServiceResult<bool>> PatchProductCategory(int id, PatchProductCategoryDTO category)
         {
+            var CategoryPhoto = category.ImageUrl;
+            var imagePath = string.Empty;
+
+            if (CategoryPhoto != null)
+            {
+                if (CategoryPhoto.Length > 5 * 1024 * 1024)
+                {
+                    return ServiceResult<bool>.Fail("File size exceeds 5MB limit");
+                }
+
+                var allowedTypes = new[] { "image/jpeg", "image/png" };
+
+                if (!allowedTypes.Contains(CategoryPhoto.ContentType))
+                {
+                    return ServiceResult<bool>.Fail("Only JPEG and PNG images are allowed");
+                }
+
+                imagePath = Path.Combine("wwwroot/uploads", CategoryPhoto.FileName);
+                using var stream = new FileStream(imagePath, FileMode.Create);
+                await CategoryPhoto.CopyToAsync(stream);
+            }
+
             var sql = @"UPDATE ProductCategories
-            SET Title = COALESCE(@Title, Title),
-                Description = COALESCE(@Description, Description),
-                ImageUrl = COALESCE(@ImageUrl, ImageUrl),
-                UpdatedAt = @UpdatedAt
-            WHERE Id = @Id";
+                        SET Title = COALESCE(@Title, Title),
+                            Description = COALESCE(@Description, Description),
+                            ImageUrl = COALESCE(@ImageUrl, ImageUrl),
+                            UpdatedAt = @UpdatedAt
+                        WHERE Id = @Id";
 
             var parameters = new
             {
                 Id = id,
-                updatedCategory.Title,
-                updatedCategory.Description,
-                updatedCategory.ImageUrl,
+                category.Title,
+                category.Description,
+                category.ImageUrl,
                 UpdatedAt = DateTime.UtcNow
             };
 
