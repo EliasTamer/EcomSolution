@@ -66,7 +66,7 @@ namespace EcomAPI.Services
 
         public async Task<ServiceResult<UserProfileResponseDTO>> GetUserProfile(int userId)
         {
-            var sql = @"SELECT Id, FirstName, Password, LastName, Email, Role, UpdatedAt, CreatedAt, ProfilePhoto, Country, PhoneNumber
+            var sql = @"SELECT Id, FirstName, LastName, Email, Role, UpdatedAt, CreatedAt, ProfilePhoto, Country, PhoneNumber
                        FROM Users
                        WHERE Id = @Id";
 
