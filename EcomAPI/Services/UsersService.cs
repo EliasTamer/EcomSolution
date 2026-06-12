@@ -10,31 +10,28 @@ namespace EcomAPI.Services
     public class UsersService : IUsersService
     {
         private readonly IDbConnection _db;
-        public UsersService(IDbConnection db)
+        private readonly IFileService _fileService;
+
+        public UsersService(IDbConnection db, IFileService fileService)
         {
             _db = db;
+            _fileService = fileService;
         }
         public async Task<ServiceResult<int>> CreateUser(CreateUserRequestDTO user)
         {
-            var ProfilePhoto = user.ProfilePhoto;
+            var ProfilePhotoPath = "";
 
-            if (ProfilePhoto.Length > 5 * 1024 * 1024)
+            if(user.ProfilePhoto != null)
             {
-                return ServiceResult<int>.Fail("File size exceeds 5MB limit");
+                var storeImageResult = await _fileService.StoreFile(user.ProfilePhoto);
+
+                if(storeImageResult.Success)
+                {
+                    ProfilePhotoPath = storeImageResult.Data;
+                }
             }
 
-            var allowedTypes = new[] { "image/jpeg", "image/png" };
-
-            if (!allowedTypes.Contains(ProfilePhoto.ContentType))
-            {
-                return ServiceResult<int>.Fail("Only JPEG and PNG images are allowed");
-            }
-
-            var imagePath = Path.Combine("wwwroot/uploads", ProfilePhoto.FileName);
-            using var stream = new FileStream(imagePath, FileMode.Create);
-            await ProfilePhoto.CopyToAsync(stream);
-
-            User usersParams = new User
+            User usersParams = new()
             {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
@@ -42,8 +39,8 @@ namespace EcomAPI.Services
                 Email = user.Email,
                 Role = user.Role,
                 Address = user.Address,
-                ProfilePhoto = imagePath,
-                PhoneNumber = imagePath,
+                ProfilePhoto = ProfilePhotoPath,
+                PhoneNumber = user.PhoneNumber,
                 Country = user.Country,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
@@ -61,6 +58,12 @@ namespace EcomAPI.Services
         {
             var sql = "SELECT * FROM Users WHERE Email = @Email";
             var user = await _db.QueryFirstOrDefaultAsync<User>(sql, new { Email = email });
+
+            if (user == null)
+            {
+                return ServiceResult<User>.Fail("User not found");
+            }
+
             return ServiceResult<User>.Ok(user);
         }
 
@@ -71,6 +74,12 @@ namespace EcomAPI.Services
                        WHERE Id = @Id";
 
             var profile = await _db.QueryFirstOrDefaultAsync<UserProfileResponseDTO>(sql, new { Id = userId });
+
+            if(profile == null)
+            {
+                return ServiceResult<UserProfileResponseDTO>.Fail("Profile not found");
+            }
+
             return ServiceResult<UserProfileResponseDTO>.Ok(profile);
         }
 

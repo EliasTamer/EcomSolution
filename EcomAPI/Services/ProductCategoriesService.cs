@@ -12,10 +12,13 @@ namespace EcomAPI.Services
     {
         private readonly IDbConnection _db;
         private readonly IMapper _mapper;
-        public ProductCategoriesService(IDbConnection db, IMapper mapper)
+        private readonly IFileService _fileService;
+
+        public ProductCategoriesService(IDbConnection db, IMapper mapper, IFileService fileService)
         {
             _db = db;
             _mapper = mapper;
+            _fileService = fileService;
         }
 
         public async Task<ServiceResult<List<ProductCategory>>> GetProductCategories(PaginationParams pagination)
@@ -44,7 +47,7 @@ namespace EcomAPI.Services
             var CategoryPhoto = category.ImageUrl;
             var imagePath = string.Empty;
 
-            if(CategoryPhoto != null)
+            if (CategoryPhoto != null)
             {
                 if (CategoryPhoto.Length > 5 * 1024 * 1024)
                 {
@@ -100,26 +103,15 @@ namespace EcomAPI.Services
 
         public async Task<ServiceResult<bool>> PatchProductCategory(int id, PatchProductCategoryDTO category)
         {
-            var CategoryPhoto = category.ImageUrl;
-            var imagePath = string.Empty;
+            var CategoryPhotoPath = "";
 
-            if (CategoryPhoto != null)
+            if (category.ImageUrl != null)
             {
-                if (CategoryPhoto.Length > 5 * 1024 * 1024)
+                var storeFileResult = await _fileService.StoreFile(category.ImageUrl);
+                if(storeFileResult.Success)
                 {
-                    return ServiceResult<bool>.Fail("File size exceeds 5MB limit");
+                    CategoryPhotoPath = storeFileResult.Data;
                 }
-
-                var allowedTypes = new[] { "image/jpeg", "image/png" };
-
-                if (!allowedTypes.Contains(CategoryPhoto.ContentType))
-                {
-                    return ServiceResult<bool>.Fail("Only JPEG and PNG images are allowed");
-                }
-
-                imagePath = Path.Combine("wwwroot/uploads", CategoryPhoto.FileName);
-                using var stream = new FileStream(imagePath, FileMode.Create);
-                await CategoryPhoto.CopyToAsync(stream);
             }
 
             var sql = @"UPDATE ProductCategories
@@ -134,7 +126,7 @@ namespace EcomAPI.Services
                 Id = id,
                 category.Title,
                 category.Description,
-                category.ImageUrl,
+                ImageUrl = CategoryPhotoPath,
                 UpdatedAt = DateTime.UtcNow
             };
 

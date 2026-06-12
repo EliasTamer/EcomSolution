@@ -10,16 +10,16 @@ namespace EcomAPI.Services
     public class JwtService : IJwtService
     {
         private readonly IConfiguration _configuration;
-        public JwtService (IConfiguration configuration)
+        public JwtService(IConfiguration configuration)
         {
             _configuration = configuration;
         }
         public string GenerateToken(User user)
         {
-            var secret = _configuration["JwtSettings:Secret"];
+            var secret = _configuration["JwtSettings:Secret"] ?? throw new InvalidOperationException("JwtSettings:Secret is not configured."); ;
             var issuer = _configuration["JwtSettings:Issuer"];
             var audience = _configuration["JwtSettings:Audience"];
-            var expirationMinutes = int.Parse(_configuration["JwtSettings:ExpiryInMinutes"]);
+            var expirationMinutes = _configuration.GetValue<int>("JwtSettings:ExpiryInMinutes");
 
             // transform the secret into a an array of bytes
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
@@ -38,7 +38,7 @@ namespace EcomAPI.Services
             };
 
             // create the token 
-            var token = new JwtSecurityToken(    
+            var token = new JwtSecurityToken(
                 issuer: issuer,
                 audience: audience,
                 claims: claims,

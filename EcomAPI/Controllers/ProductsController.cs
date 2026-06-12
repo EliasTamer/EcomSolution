@@ -12,7 +12,8 @@ namespace EcomAPI.Controllers
     {
         private readonly IProductsService _productService;
 
-        public ProductsController(IProductsService productService) {
+        public ProductsController(IProductsService productService)
+        {
             _productService = productService;
         }
 
@@ -20,7 +21,7 @@ namespace EcomAPI.Controllers
         [HttpGet("ProductListing")]
         public async Task<IActionResult> GetProductListing([FromQuery] ProductListingFilters filters)
         {
-            ApiResponse response = new ();
+            ApiResponse response = new();
 
             if (!ModelState.IsValid)
             {
@@ -34,7 +35,7 @@ namespace EcomAPI.Controllers
 
             var result = await _productService.GetProducts(filters);
 
-            if(result.Success)
+            if (result.Success)
             {
                 response.Status = 200;
                 response.Success = true;
@@ -50,7 +51,7 @@ namespace EcomAPI.Controllers
         [HttpPost("CreateProduct")]
         public async Task<IActionResult> CreateProduct([FromBody] CreateProductDTO product)
         {
-            ApiResponse response = new ();
+            ApiResponse response = new();
 
             if (!ModelState.IsValid)
             {
@@ -64,7 +65,7 @@ namespace EcomAPI.Controllers
 
             var result = await _productService.CreateProduct(product);
 
-            if(result.Data > 0)
+            if (result.Data > 0)
             {
                 response.Success = true;
                 response.Status = 200;
@@ -85,7 +86,7 @@ namespace EcomAPI.Controllers
 
             var result = await _productService.DeleteProduct(productId);
 
-            if(result.Success)
+            if (result.Success)
             {
                 response.Success = true;
                 response.Status = 200;
@@ -98,11 +99,11 @@ namespace EcomAPI.Controllers
             return BadRequest(response);
         }
 
-        [Authorize]
-        [HttpPatch("PatchProduct/{productId}")]
-        public async Task<IActionResult> PatchProduct([FromQuery] int productId, [FromBody]  PatchProductDTO product)
-        {
+        //[Authorize]
+        //[HttpPatch("PatchProduct/{productId}")]
+        //public async Task<IActionResult> PatchProduct([FromQuery] int productId, [FromBody] PatchProductDTO product)
+        //{
 
-        }
+        //}
     }
 }

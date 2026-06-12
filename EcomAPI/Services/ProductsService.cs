@@ -11,7 +11,8 @@ namespace EcomAPI.Services
     public class ProductsService : IProductsService
     {
         private readonly IDbConnection _db;
-        public ProductsService(IDbConnection db) {
+        public ProductsService(IDbConnection db)
+        {
             _db = db;
         }
 
@@ -24,18 +25,20 @@ namespace EcomAPI.Services
             var conditions = new List<string>();
             var parameters = new DynamicParameters();
 
-            if(filters.MinPrice != null)
+            if (filters.MinPrice != null)
             {
                 conditions.Add("Price >= @MinPrice");
                 parameters.Add("MinPrice", filters.MinPrice);
             }
 
-            if (filters.MaxPrice != null) {
+            if (filters.MaxPrice != null)
+            {
                 conditions.Add("Price <= @MaxPrice");
                 parameters.Add("MaxPrice", filters.MaxPrice);
             }
 
-            if (filters.CategoryId != null) {
+            if (filters.CategoryId != null)
+            {
                 conditions.Add("CategoryId = @CategoryId");
                 parameters.Add("CategoryId", filters.CategoryId);
             }
@@ -94,7 +97,7 @@ namespace EcomAPI.Services
             var sql = @"DELETE FROM Product 
                         WHERE Id = @Id";
 
-            var affectedRows = await _db.ExecuteAsync(sql, new { Id});
+            var affectedRows = await _db.ExecuteAsync(sql, new { Id });
             return affectedRows > 0 ? ServiceResult<bool>.Ok(true) : ServiceResult<bool>.Fail("Product not found");
         }
 

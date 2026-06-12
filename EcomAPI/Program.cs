@@ -14,7 +14,7 @@ using System.Data;
 // 3. ADD ENDPOINT TO UPDATE USER DETAILS
 // 4. ADD OTP SERVICE TO START USING IT IN MULTIPLE PLACES
 // 5. MAKE FILE CREATION AS A UTILITY CLASS TO AVOID REPETITION
-// 6. APPLY IFormFile instead of statis urls for Products as well
+// 6. APPLY IFormFile instead of static urls for Products as well
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,10 +40,11 @@ builder.Services.AddScoped<IDbConnection>(sp => new SqlConnection(builder.Config
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IProductCategoriesService, ProductCategoriesService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IFileService, FileService>();
 
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 
-var jwtSecret = builder.Configuration["JwtSettings:Secret"];
+var jwtSecret = builder.Configuration["JwtSettings:Secret"] ?? throw new InvalidOperationException("JwtSettings:Secret is not configured.");
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
 var jwtAudience = builder.Configuration["JwtSettings:Audience"];
 
