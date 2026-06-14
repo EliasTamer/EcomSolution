@@ -11,7 +11,7 @@ namespace EcomAPI.DTOs
         public decimal Price { get; set; }
         [Required]
         public int CategoryId { get; set; }
-        public string? ImageUrl { get; set; }
+        public IFormFile? ImageUrl { get; set; }
         [Required]
         public int StockQuantity { get; set; }
     }

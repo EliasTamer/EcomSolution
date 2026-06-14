@@ -14,7 +14,7 @@ namespace EcomAPI.Services
         private readonly IMapper _mapper;
         private readonly IFileService _fileService;
 
-        public ProductCategoriesService(IDbConnection db, IMapper mapper, IFileService fileService)
+        public ProductCategoriesService(IDbConnection db, IMapper mapper, [FromKeyedServices("productCategoryPhotos")] IFileService fileService)
         {
             _db = db;
             _mapper = mapper;
@@ -44,26 +44,20 @@ namespace EcomAPI.Services
 
         public async Task<ServiceResult<int>> CreateProductCategory(CreateProductCategoryDTO category)
         {
-            var CategoryPhoto = category.ImageUrl;
+            var productCategoryPhoto = category.ImageUrl;
             var imagePath = string.Empty;
 
-            if (CategoryPhoto != null)
+            if (productCategoryPhoto != null)
             {
-                if (CategoryPhoto.Length > 5 * 1024 * 1024)
+                var storeImageResult = await _fileService.StoreFile(productCategoryPhoto);
+                if (storeImageResult.Success)
                 {
-                    return ServiceResult<int>.Fail("File size exceeds 5MB limit");
+                    imagePath = storeImageResult.Data;
                 }
-
-                var allowedTypes = new[] { "image/jpeg", "image/png" };
-
-                if (!allowedTypes.Contains(CategoryPhoto.ContentType))
+                else
                 {
-                    return ServiceResult<int>.Fail("Only JPEG and PNG images are allowed");
+                    return ServiceResult<int>.Fail(storeImageResult.Message);
                 }
-
-                imagePath = Path.Combine("wwwroot/uploads", CategoryPhoto.FileName);
-                using var stream = new FileStream(imagePath, FileMode.Create);
-                await CategoryPhoto.CopyToAsync(stream);
             }
 
             var sql = @"INSERT INTO ProductCategories(Title, Description, ImageUrl)
@@ -103,14 +97,19 @@ namespace EcomAPI.Services
 
         public async Task<ServiceResult<bool>> PatchProductCategory(int id, PatchProductCategoryDTO category)
         {
-            var CategoryPhotoPath = "";
+            var productCategoryPhoto = category.ImageUrl;
+            var imagePath = string.Empty;
 
-            if (category.ImageUrl != null)
+            if (productCategoryPhoto != null)
             {
-                var storeFileResult = await _fileService.StoreFile(category.ImageUrl);
-                if(storeFileResult.Success)
+                var storeImageResult = await _fileService.StoreFile(productCategoryPhoto);
+                if (storeImageResult.Success)
                 {
-                    CategoryPhotoPath = storeFileResult.Data;
+                    imagePath = storeImageResult.Data;
+                }
+                else
+                {
+                    return ServiceResult<bool>.Fail(storeImageResult.Message);
                 }
             }
 
@@ -126,7 +125,7 @@ namespace EcomAPI.Services
                 Id = id,
                 category.Title,
                 category.Description,
-                ImageUrl = CategoryPhotoPath,
+                ImageUrl = imagePath,
                 UpdatedAt = DateTime.UtcNow
             };
 

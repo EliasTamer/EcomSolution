@@ -12,22 +12,27 @@ namespace EcomAPI.Services
         private readonly IDbConnection _db;
         private readonly IFileService _fileService;
 
-        public UsersService(IDbConnection db, IFileService fileService)
+        public UsersService(IDbConnection db, [FromKeyedServices("userPhotos")] IFileService fileService)
         {
             _db = db;
             _fileService = fileService;
         }
+
         public async Task<ServiceResult<int>> CreateUser(CreateUserRequestDTO user)
         {
-            var ProfilePhotoPath = "";
+            var userPhoto = user.ProfilePhoto;
+            var imagePath = string.Empty;
 
-            if(user.ProfilePhoto != null)
+            if (userPhoto != null)
             {
-                var storeImageResult = await _fileService.StoreFile(user.ProfilePhoto);
-
-                if(storeImageResult.Success)
+                var storeImageResult = await _fileService.StoreFile(userPhoto);
+                if (storeImageResult.Success)
                 {
-                    ProfilePhotoPath = storeImageResult.Data;
+                    imagePath = storeImageResult.Data;
+                }
+                else
+                {
+                    return ServiceResult<int>.Fail(storeImageResult.Message);
                 }
             }
 
@@ -39,7 +44,7 @@ namespace EcomAPI.Services
                 Email = user.Email,
                 Role = user.Role,
                 Address = user.Address,
-                ProfilePhoto = ProfilePhotoPath,
+                ProfilePhoto = imagePath,
                 PhoneNumber = user.PhoneNumber,
                 Country = user.Country,
                 CreatedAt = DateTime.Now,
@@ -87,7 +92,7 @@ namespace EcomAPI.Services
         {
             var user = await GetUserByEmail(newPasswordRequest.Email);
 
-            if (user == null)
+            if (user.Data == null)
             {
                 return ServiceResult<bool>.Fail("User not found");
             }

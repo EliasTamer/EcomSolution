@@ -11,9 +11,11 @@ namespace EcomAPI.Services
     public class ProductsService : IProductsService
     {
         private readonly IDbConnection _db;
-        public ProductsService(IDbConnection db)
+        private readonly IFileService _fileService;
+        public ProductsService(IDbConnection db, [FromKeyedServices("productPhotos")] IFileService fileService)
         {
             _db = db;
+            _fileService = fileService;
         }
 
         public async Task<ServiceResult<List<Product>>> GetProducts(ProductListingFilters filters)
@@ -74,6 +76,21 @@ namespace EcomAPI.Services
 
         public async Task<ServiceResult<int>> CreateProduct(CreateProductDTO product)
         {
+            var productPhoto = product.ImageUrl;
+            var imagePath = string.Empty;
+
+            if(productPhoto != null)
+            {
+                var storeImageResult = await _fileService.StoreFile(productPhoto);
+                if(storeImageResult.Success)
+                {
+                    imagePath = storeImageResult.Data;
+                } else
+                {
+                    return ServiceResult<int>.Fail(storeImageResult.Message);
+                }
+            }
+
             var sql = @"INSERT INTO Products(Name, Description, Price, CategoryId, ImageUrl, StockQuantity, IsAvailable)
                         VALUES(@Name, @Description, @Price, @CategoryId, @ImageUrl, @StockQuantity, @IsAvailable) 
                         SELECT CAST(SCOPE_IDENTITY() as int);";
