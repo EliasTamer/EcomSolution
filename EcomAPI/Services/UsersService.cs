@@ -20,20 +20,18 @@ namespace EcomAPI.Services
 
         public async Task<ServiceResult<int>> CreateUser(CreateUserRequestDTO user)
         {
-            var userPhoto = user.ProfilePhoto;
-            var imagePath = string.Empty;
+            string? newImagePath = null;
 
-            if (userPhoto != null)
+            if (user.ProfilePhoto != null)
             {
-                var storeImageResult = await _fileService.StoreFile(userPhoto);
-                if (storeImageResult.Success)
-                {
-                    imagePath = storeImageResult.Data;
-                }
-                else
+                var storeImageResult = await _fileService.StoreFile(user.ProfilePhoto);
+
+                if (!storeImageResult.Success)
                 {
                     return ServiceResult<int>.Fail(storeImageResult.Message);
                 }
+
+                newImagePath = storeImageResult.Data;
             }
 
             User usersParams = new()
@@ -44,7 +42,7 @@ namespace EcomAPI.Services
                 Email = user.Email,
                 Role = user.Role,
                 Address = user.Address,
-                ProfilePhoto = imagePath,
+                ProfilePhoto = newImagePath,
                 PhoneNumber = user.PhoneNumber,
                 Country = user.Country,
                 CreatedAt = DateTime.Now,
@@ -132,20 +130,19 @@ namespace EcomAPI.Services
 
         public async Task<ServiceResult<bool>> PatchUserDetails(PatchUserDetailsDTO user)
         {
-            var userPhoto = user.ProfilePhoto;
-            var imagePath = string.Empty;
+            string? newImagePath = null;
 
-            if (userPhoto != null)
+            if (user.ProfilePhoto != null)
             {
-                var storeImageResult = await _fileService.StoreFile(userPhoto);
-                if (storeImageResult.Success)
-                {
-                    imagePath = storeImageResult.Data;
-                }
-                else
+                var storeImageResult = await _fileService.StoreFile(user.ProfilePhoto);
+
+                if (!storeImageResult.Success)
                 {
                     return ServiceResult<bool>.Fail(storeImageResult.Message);
                 }
+
+                newImagePath = storeImageResult.Data;
+            }
 
                 var sql = @"UPDATE Users
                             SET FirstName = COALESCE(@FirstName, FirstName),
@@ -165,27 +162,25 @@ namespace EcomAPI.Services
                     user.Address,
                     user.Role,
                     user.Country,
-                    ProfilePhoto = userPhoto,
+                    ProfilePhoto = newImagePath,
                     UpdatedAt = DateTime.Now,
                 });
 
                 if (row.Id == 0)
                 {
-                    if(userPhoto != null)
+                    if(newImagePath != null)
                     {
-
+                        _fileService.DeleteFile(newImagePath);
                     }
                     return ServiceResult<bool>.Fail("User not found");
                 }
 
-                if (userPhoto != null && !string.IsNullOrEmpty(row.OldPhoto))
+                if (newImagePath != null && !string.IsNullOrEmpty(row.OldPhoto))
                 {
-
+                    _fileService.DeleteFile(row.OldPhoto);
                 }
 
                 return ServiceResult<bool>.Ok(true);
             }
-
         }
-    }
 }

@@ -11,6 +11,6 @@ namespace EcomAPI.Interfaces
         Task<ServiceResult<bool>> ChangePassword(ChangePasswordDTO newPassword);
         Task<ServiceResult<UserProfileResponseDTO>> GetUserProfile(int userId);
         Task<ServiceResult<bool>> DeleteUser(int userId);
-        Task<ServiceResult<bool>> PatchUserDetails(CreateUserRequestDTO user);
+        Task<ServiceResult<bool>> PatchUserDetails(PatchUserDetailsDTO user);
     }
 }

@@ -44,20 +44,18 @@ namespace EcomAPI.Services
 
         public async Task<ServiceResult<int>> CreateProductCategory(CreateProductCategoryDTO category)
         {
-            var productCategoryPhoto = category.ImageUrl;
-            var imagePath = string.Empty;
+            string? newImagePath = null;
 
-            if (productCategoryPhoto != null)
+            if (category.ImageUrl != null)
             {
-                var storeImageResult = await _fileService.StoreFile(productCategoryPhoto);
-                if (storeImageResult.Success)
-                {
-                    imagePath = storeImageResult.Data;
-                }
-                else
+                var storeImageResult = await _fileService.StoreFile(category.ImageUrl);
+
+                if (!storeImageResult.Success)
                 {
                     return ServiceResult<int>.Fail(storeImageResult.Message);
                 }
+
+                newImagePath = storeImageResult.Data;
             }
 
             var sql = @"INSERT INTO ProductCategories(Title, Description, ImageUrl)
@@ -68,7 +66,7 @@ namespace EcomAPI.Services
             {
                 Title = category.Title,
                 Description = category.Description,
-                ImageUrl = imagePath,
+                ImageUrl = newImagePath,
             });
             return ServiceResult<int>.Ok(productCategoryId);
         }
@@ -97,20 +95,18 @@ namespace EcomAPI.Services
 
         public async Task<ServiceResult<bool>> PatchProductCategory(int id, PatchProductCategoryDTO category)
         {
-            var productCategoryPhoto = category.ImageUrl;
-            var imagePath = string.Empty;
+            string? newImagePath = null;
 
-            if (productCategoryPhoto != null)
+            if (category.ImageUrl != null)
             {
-                var storeImageResult = await _fileService.StoreFile(productCategoryPhoto);
-                if (storeImageResult.Success)
-                {
-                    imagePath = storeImageResult.Data;
-                }
-                else
+                var storeImageResult = await _fileService.StoreFile(category.ImageUrl);
+
+                if (!storeImageResult.Success)
                 {
                     return ServiceResult<bool>.Fail(storeImageResult.Message);
                 }
+
+                newImagePath = storeImageResult.Data;
             }
 
             var sql = @"UPDATE ProductCategories
@@ -118,6 +114,7 @@ namespace EcomAPI.Services
                             Description = COALESCE(@Description, Description),
                             ImageUrl = COALESCE(@ImageUrl, ImageUrl),
                             UpdatedAt = @UpdatedAt
+                            OUTPUT deleted.Id as Id, deleted.ImageUrl as OldPhoto
                         WHERE Id = @Id";
 
             var parameters = new
@@ -125,14 +122,27 @@ namespace EcomAPI.Services
                 Id = id,
                 category.Title,
                 category.Description,
-                ImageUrl = imagePath,
+                ImageUrl = newImagePath,
                 UpdatedAt = DateTime.UtcNow
             };
 
-            var rowsAffected = await _db.ExecuteAsync(sql, parameters);
-            return rowsAffected > 0
-                ? ServiceResult<bool>.Ok(true)
-                : ServiceResult<bool>.Fail("Category not found or update failed");
+            var row = await _db.QuerySingleOrDefaultAsync<(int Id, string? OldPhoto)>(sql, parameters);
+
+            if (row.Id == 0)
+            {
+                if (newImagePath != null)
+                {
+                    _fileService.DeleteFile(newImagePath);
+                }
+                return ServiceResult<bool>.Fail("User not found");
+            }
+
+            if (newImagePath != null && !string.IsNullOrEmpty(row.OldPhoto))
+            {
+                _fileService.DeleteFile(row.OldPhoto);
+            }
+
+            return ServiceResult<bool>.Ok(true);
         }
     }
 }

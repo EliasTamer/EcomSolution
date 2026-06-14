@@ -50,5 +50,15 @@ namespace EcomAPI.Services
 
             return ServiceResult<string>.Ok(safeName);
         }
+
+        public ServiceResult<bool> DeleteFile(string path)
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+                return ServiceResult<bool>.Ok(true);
+            }
+            return ServiceResult<bool>.Fail("File not found");
+        }
     }
 }

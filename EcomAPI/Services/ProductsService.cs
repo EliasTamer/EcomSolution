@@ -76,19 +76,17 @@ namespace EcomAPI.Services
 
         public async Task<ServiceResult<int>> CreateProduct(CreateProductDTO product)
         {
-            var productPhoto = product.ImageUrl;
-            var imagePath = string.Empty;
+            string? imagePath = null;
 
-            if(productPhoto != null)
+            if (product.ImageUrl != null)
             {
-                var storeImageResult = await _fileService.StoreFile(productPhoto);
-                if(storeImageResult.Success)
-                {
-                    imagePath = storeImageResult.Data;
-                } else
+                var storeImageResult = await _fileService.StoreFile(product.ImageUrl);
+
+                if (!storeImageResult.Success)
                 {
                     return ServiceResult<int>.Fail(storeImageResult.Message);
                 }
+                imagePath = storeImageResult.Data;
             }
 
             var sql = @"INSERT INTO Products(Name, Description, Price, CategoryId, ImageUrl, StockQuantity, IsAvailable)
@@ -100,7 +98,7 @@ namespace EcomAPI.Services
             parameters.Add("Description", product.Description);
             parameters.Add("Price", product.Price);
             parameters.Add("CategoryId", product.CategoryId);
-            parameters.Add("ImageUrl", product.ImageUrl);
+            parameters.Add("ImageUrl", imagePath);
             parameters.Add("StockQuantity", product.StockQuantity);
             parameters.Add("IsAvailable", product.StockQuantity > 0);
 
