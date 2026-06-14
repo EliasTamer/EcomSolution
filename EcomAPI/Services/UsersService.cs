@@ -129,5 +129,63 @@ namespace EcomAPI.Services
             var affectedRows = await _db.ExecuteAsync(sql, new { Id = userId });
             return ServiceResult<bool>.Ok(affectedRows > 0);
         }
+
+        public async Task<ServiceResult<bool>> PatchUserDetails(PatchUserDetailsDTO user)
+        {
+            var userPhoto = user.ProfilePhoto;
+            var imagePath = string.Empty;
+
+            if (userPhoto != null)
+            {
+                var storeImageResult = await _fileService.StoreFile(userPhoto);
+                if (storeImageResult.Success)
+                {
+                    imagePath = storeImageResult.Data;
+                }
+                else
+                {
+                    return ServiceResult<bool>.Fail(storeImageResult.Message);
+                }
+
+                var sql = @"UPDATE Users
+                            SET FirstName = COALESCE(@FirstName, FirstName),
+                                LastName = COALESCE(@LastName, LastName),
+                                Address = COALESCE(@Address, Address),
+                                Role = COALESCE(@Role, Role),
+                                Country = COALESCE(@Country, Country),
+                                ProfilePhoto = COALESCE(@ProfilePhoto, ProfilePhoto),
+                                UpdatedAt = @UpdatedAt
+                            OUTPUT deleted.Id as Id, deleted.ProfilePhoto as OldPhoto
+                            WHERE Id = @Id";
+
+                var row = await _db.QuerySingleOrDefaultAsync<(int Id, string? OldPhoto)>(sql, new
+                {
+                    user.FirstName,
+                    user.LastName,
+                    user.Address,
+                    user.Role,
+                    user.Country,
+                    ProfilePhoto = userPhoto,
+                    UpdatedAt = DateTime.Now,
+                });
+
+                if (row.Id == 0)
+                {
+                    if(userPhoto != null)
+                    {
+
+                    }
+                    return ServiceResult<bool>.Fail("User not found");
+                }
+
+                if (userPhoto != null && !string.IsNullOrEmpty(row.OldPhoto))
+                {
+
+                }
+
+                return ServiceResult<bool>.Ok(true);
+            }
+
+        }
     }
 }
