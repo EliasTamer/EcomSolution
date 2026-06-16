@@ -1,0 +1,18 @@
+﻿using EcomAPI.Entities;
+using System.ComponentModel.DataAnnotations;
+
+namespace EcomAPI.DTOs
+{
+    public class ValidateOtpDTO
+    {
+        [Required, EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        public string Otp { get; set; } = string.Empty;
+
+        [Required]
+        [EnumDataType(typeof(OtpPurpose))]
+        public OtpPurpose? Purpose { get; set; }
+    }
+}
