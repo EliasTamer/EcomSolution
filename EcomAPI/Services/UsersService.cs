@@ -70,7 +70,7 @@ namespace EcomAPI.Services
             return ServiceResult<User>.Ok(user);
         }
 
-        public async Task<ServiceResult<UserProfileResponseDTO>> GetUserProfile(int userId)
+        public async Task<ServiceResult<UserProfileResponseDTO>> GetUserProfileById(int userId)
         {
             var sql = @"SELECT Id, FirstName, LastName, Email, Role, UpdatedAt, CreatedAt, ProfilePhoto, Country, PhoneNumber
                        FROM Users
@@ -79,6 +79,22 @@ namespace EcomAPI.Services
             var profile = await _db.QueryFirstOrDefaultAsync<UserProfileResponseDTO>(sql, new { Id = userId });
 
             if(profile == null)
+            {
+                return ServiceResult<UserProfileResponseDTO>.Fail("Profile not found");
+            }
+
+            return ServiceResult<UserProfileResponseDTO>.Ok(profile);
+        }
+
+        public async Task<ServiceResult<UserProfileResponseDTO>> GetUserProfileByEmail(string email)
+        {
+            var sql = @"SELECT Id, FirstName, LastName, Email, Role, UpdatedAt, CreatedAt, ProfilePhoto, Country, PhoneNumber
+                       FROM Users
+                       WHERE Email = @Email";
+
+            var profile = await _db.QueryFirstOrDefaultAsync<UserProfileResponseDTO>(sql, new { Email = email });
+
+            if (profile == null)
             {
                 return ServiceResult<UserProfileResponseDTO>.Fail("Profile not found");
             }
@@ -116,7 +132,7 @@ namespace EcomAPI.Services
 
         public async Task<ServiceResult<bool>> DeleteUser(int userId)
         {
-            var user = await GetUserProfile(userId);
+            var user = await GetUserProfileById(userId);
 
             if (user == null)
             {
@@ -182,5 +198,6 @@ namespace EcomAPI.Services
 
                 return ServiceResult<bool>.Ok(true);
             }
-        }
+    }
+
 }

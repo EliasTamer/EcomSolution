@@ -147,7 +147,7 @@ namespace EcomAPI.Controllers
         {
             var response = new ApiResponse();
 
-            var getUserProfileResult = await _usersService.GetUserProfile(userId);
+            var getUserProfileResult = await _usersService.GetUserProfileById(userId);
 
             if (getUserProfileResult.Data == null)
             {
