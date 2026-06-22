@@ -116,5 +116,62 @@ namespace EcomAPI.Services
             return affectedRows > 0 ? ServiceResult<bool>.Ok(true) : ServiceResult<bool>.Fail("Product not found");
         }
 
+        public async Task<ServiceResult<bool>> PatchProduct(PatchProductDTO product)
+        {
+            string? newImagePath = null;
+
+            if (product.ImageUrl != null)
+            {
+                var storeImageResult = await _fileService.StoreFile(product.ImageUrl);
+
+                if (!storeImageResult.Success)
+                {
+                    return ServiceResult<bool>.Fail(storeImageResult.Message);
+                }
+                newImagePath = storeImageResult.Data;
+            }
+
+            var sql = $"""
+                UPDATE Products
+                    SET 
+                        Name = COALESCE(@FirstName, FirstName),
+                        Description = COALESCE(@Description, Description),
+                        Price = COALESCE(@Price, Price),
+                        CategoryId = COALESCE(@CategoryId, CategoryId),
+                        ImageUrl = COALESCE(@ImageUrl, ImageUrl),
+                        StockQuantity = COALESCE(@StockQuantity, StockQuantity),
+                        IsAvailable = COALESCE(@IsAvailable, IsAvailable)
+                OUTPUT deleted.Id as Id,  deleted.ImageUrl as OldImage 
+                WHERE Id = @Id
+                """;
+
+            var row = await _db.QuerySingleOrDefaultAsync<(int Id, string? OldImage)>(sql, new
+            {
+                product.Id,
+                product.Description,
+                product.Price,
+                product.CategoryId,
+                product.ImageUrl,
+                product.StockQuantity,
+                product.IsAvailable,
+            });
+
+            if (row.Id == 0)
+            {
+                if (newImagePath != null)
+                {
+                    _fileService.DeleteFile(newImagePath);
+                }
+                return ServiceResult<bool>.Fail("User not found");
+            }
+
+            if (newImagePath != null && !string.IsNullOrEmpty(row.OldImage))
+            {
+                _fileService.DeleteFile(row.OldImage);
+            }
+
+            return ServiceResult<bool>.Ok(true);
+        }
+
     }
 }

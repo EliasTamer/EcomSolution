@@ -99,11 +99,11 @@ namespace EcomAPI.Controllers
             return BadRequest(response);
         }
 
-        //[Authorize]
-        //[HttpPatch("PatchProduct/{productId}")]
-        //public async Task<IActionResult> PatchProduct([FromQuery] int productId, [FromBody] PatchProductDTO product)
-        //{
+        [Authorize]
+        [HttpPatch("PatchProduct/{productId}")]
+        public async Task<IActionResult> PatchProduct([FromQuery] int productId, [FromBody] PatchProductDTO product)
+        {
 
-        //}
+        }
     }
 }

@@ -173,6 +173,7 @@ namespace EcomAPI.Services
 
                 var row = await _db.QuerySingleOrDefaultAsync<(int Id, string? OldPhoto)>(sql, new
                 {
+                    user.Id,
                     user.FirstName,
                     user.LastName,
                     user.Address,
