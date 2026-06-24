@@ -9,5 +9,6 @@ namespace EcomAPI.Interfaces
         Task<ServiceResult<List<Product>>> GetProducts(ProductListingFilters filters);
         Task<ServiceResult<int>> CreateProduct(CreateProductDTO product);
         Task<ServiceResult<bool>> DeleteProduct(int id);
+        Task<ServiceResult<bool>> PatchProduct(int id, PatchProductDTO product);
     }
 }

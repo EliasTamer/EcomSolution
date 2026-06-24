@@ -116,7 +116,7 @@ namespace EcomAPI.Services
             return affectedRows > 0 ? ServiceResult<bool>.Ok(true) : ServiceResult<bool>.Fail("Product not found");
         }
 
-        public async Task<ServiceResult<bool>> PatchProduct(PatchProductDTO product)
+        public async Task<ServiceResult<bool>> PatchProduct(int id, PatchProductDTO product)
         {
             string? newImagePath = null;
 
@@ -147,7 +147,7 @@ namespace EcomAPI.Services
 
             var row = await _db.QuerySingleOrDefaultAsync<(int Id, string? OldImage)>(sql, new
             {
-                product.Id,
+                Id = id,
                 product.Description,
                 product.Price,
                 product.CategoryId,

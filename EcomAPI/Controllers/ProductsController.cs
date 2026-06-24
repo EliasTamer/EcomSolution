@@ -103,7 +103,32 @@ namespace EcomAPI.Controllers
         [HttpPatch("PatchProduct/{productId}")]
         public async Task<IActionResult> PatchProduct([FromQuery] int productId, [FromBody] PatchProductDTO product)
         {
+            ApiResponse response = new();
 
+            if (!ModelState.IsValid)
+            {
+                response.Status = 400;
+                response.Message = "Validation failed.";
+                response.Errors = ModelState.Values.SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return BadRequest(response);
+            }
+
+            var result = await _productService.PatchProduct(productId, product);
+
+            if (result.Success) {
+                response.Success = true;
+                response.Status = 200;
+                response.Data = result.Data;
+                response.Message = "Product patched";
+
+                return Ok(response);
+            }
+
+            response.Message = result.Message;
+            response.Status = 400;
+            return BadRequest(response);
         }
     }
 }
