@@ -1,4 +1,7 @@
-﻿using EcomAPI.Interfaces;
+﻿using EcomAPI.DTOs;
+using EcomAPI.Interfaces;
+using EcomAPI.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EcomAPI.Controllers
@@ -14,5 +17,15 @@ namespace EcomAPI.Controllers
             _usersService = usersService;
             _jwtService = jwtService;
         }
+
+        [Authorize]
+        [HttpPost("PlaceOrder")]
+        public async Task<IActionResult> PlaceOrder(CreateOrderDTO order)
+        {
+            ApiResponse response = new();
+
+
+        }
+
     }
 }

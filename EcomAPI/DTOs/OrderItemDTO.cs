@@ -3,6 +3,6 @@
     public class OrderItemDTO
     {
         public int ProductId { get; set; }
-        public int Quanttiy { get; set; } 
+        public int Quantity { get; set; } 
     }
 }
