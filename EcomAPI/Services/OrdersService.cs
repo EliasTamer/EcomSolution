@@ -1,12 +1,13 @@
 ﻿using Dapper;
 using EcomAPI.DTOs;
 using EcomAPI.Entities;
+using EcomAPI.Interfaces;
 using EcomAPI.Responses;
 using System.Data;
 
 namespace EcomAPI.Services
 {
-    public class OrdersService
+    public class OrdersService : IOrdersService
     {
         private readonly IDbConnection _db;
 
@@ -15,7 +16,7 @@ namespace EcomAPI.Services
             _db = db;
         }
 
-        public async Task<ServiceResult<string>> PlaceOrder (int userId, CreateOrderDTO order)
+        public async Task<ServiceResult<string>> PlaceOrder(int userId, CreateOrderDTO order)
         {
             var productIds = order.OrderItems.Select(i => i.ProductId).ToList();
 

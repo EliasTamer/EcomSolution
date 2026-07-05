@@ -10,8 +10,7 @@ using System.Text.Json.Serialization;
 
 
 // TO DO LIST:
-// 1. IMPLEMENT ORDERS CONTROLLER
-// 2. START IMPLEMENTING AZURE STORAGE AND FUNCTION APP FEATURES FOR THIS APP
+// 1. START IMPLEMENTING AZURE STORAGE AND FUNCTION APP FEATURES FOR THIS APP
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +42,7 @@ builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IProductCategoriesService, ProductCategoriesService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<IOrdersService, OrdersService>();
 builder.Services.AddKeyedSingleton<IFileService>("userPhotos", (sp, key) => new FileService("user-photos", [".jpg", ".png"], 5));
 builder.Services.AddKeyedSingleton<IFileService>("productCategoryPhotos", (sp, key) => new FileService("product-category-photos", [".jpg", ".png"], 5));
 builder.Services.AddKeyedSingleton<IFileService>("productPhotos", (sp, key) => new FileService("product-photos", [".jpg", ".png"], 5));
