@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+
+EcomAPI/appsettings.Development.json
+EcomAPI/appsettings.Local.json
+EcomAPI/appsettings.*.local.json
+EcomAPI/ProjectQueries.sql

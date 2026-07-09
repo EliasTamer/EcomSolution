@@ -10,7 +10,10 @@ using System.Text.Json.Serialization;
 
 
 // TO DO LIST:
-// 1. START IMPLEMENTING AZURE STORAGE AND FUNCTION APP FEATURES FOR THIS APP
+// 1. TRANSFORM CONTROLLER TO AZURE APP SERVICE
+// 2. CREATE AN AZURE SQL SERVER AND START STORING DATA THERE
+// 3. CREATE AZURE STORAGE AND START SAVING DATA THERE 
+// 4. STORE USER SESSIONS IN REDIS
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,9 +77,6 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
 var app = builder.Build();
 
 app.UseExceptionHandler(appError =>
@@ -104,11 +104,6 @@ app.UseExceptionHandler(appError =>
     });
 });
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
 
 app.UseHttpsRedirection();
 
