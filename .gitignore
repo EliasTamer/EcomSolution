@@ -367,3 +367,4 @@ EcomAPI/appsettings.Development.json
 EcomAPI/appsettings.Local.json
 EcomAPI/appsettings.*.local.json
 EcomAPI/ProjectQueries.sql
+EcomAPI/appsettings.json
