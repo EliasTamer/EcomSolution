@@ -23,7 +23,7 @@ namespace EcomAPI.Services
             {
                 return ServiceResult<string>.Fail("File is empty");
             }
-
+             
             var allowedMaxSizeInBytes = _maxSize * 1024 * 1024;
 
             if (file.Length > allowedMaxSizeInBytes)

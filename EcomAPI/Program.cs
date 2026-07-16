@@ -44,7 +44,6 @@ builder.Services.AddScoped<IDbConnection>(sp => new SqlConnection(builder.Config
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IProductCategoriesService, ProductCategoriesService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IOrdersService, OrdersService>();
 builder.Services.AddKeyedSingleton<IFileService>("userPhotos", (sp, key) => new FileService("user-photos", [".jpg", ".png"], 5));
 builder.Services.AddKeyedSingleton<IFileService>("productCategoryPhotos", (sp, key) => new FileService("product-category-photos", [".jpg", ".png"], 5));
@@ -76,6 +75,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+builder.Services.AddApplicationInsightsTelemetry();
 
 var app = builder.Build();
 
