@@ -44,6 +44,7 @@ builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IProductCategoriesService, ProductCategoriesService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IOrdersService, OrdersService>();
+builder.Services.AddScoped<IProductsService, ProductsService>();
 builder.Services.AddKeyedSingleton<IFileService>("userPhotos", (sp, key) => new FileService("user-photos", [".jpg", ".png"], 5));
 builder.Services.AddKeyedSingleton<IFileService>("productCategoryPhotos", (sp, key) => new FileService("product-category-photos", [".jpg", ".png"], 5));
 builder.Services.AddKeyedSingleton<IFileService>("productPhotos", (sp, key) => new FileService("product-photos", [".jpg", ".png"], 5));

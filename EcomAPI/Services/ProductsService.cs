@@ -4,7 +4,6 @@ using EcomAPI.Entities;
 using EcomAPI.Interfaces;
 using EcomAPI.Responses;
 using System.Data;
-using System.Reflection.Metadata.Ecma335;
 
 namespace EcomAPI.Services
 {
