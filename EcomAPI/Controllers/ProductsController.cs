@@ -17,7 +17,7 @@ namespace EcomAPI.Controllers
             _productService = productService;
         }
 
-        [Authorize]
+
         [HttpGet("ProductListing")]
         public async Task<IActionResult> GetProductListing([FromQuery] ProductListingFilters filters)
         {
