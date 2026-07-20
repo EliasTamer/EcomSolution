@@ -12,8 +12,8 @@ namespace EcomAPI.Controllers
     [Route("api/Orders")]
     public class OrdersController : ControllerBase
     {
-        private readonly OrdersService _ordersService;
-        public OrdersController(OrdersService ordersService)
+        private readonly IOrdersService _ordersService;
+        public OrdersController(IOrdersService ordersService)
         {
             _ordersService = ordersService;
         }

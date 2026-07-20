@@ -13,7 +13,7 @@ using System.Text.Json.Serialization;
 // 1. TRANSFORM CONTROLLER TO AZURE APP SERVICE
 // 2. CREATE AN AZURE SQL SERVER AND START STORING DATA THERE
 // 3. CREATE AZURE STORAGE AND START SAVING DATA THERE 
-// 4. STORE USER SESSIONS IN REDISSss
+// 4. STORE USER SESSIONS IN REDIS
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,13 +30,12 @@ builder.Services.AddRateLimiter(options =>
 });
 
 // Add services to the container.
-builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
-{
-    options.SuppressModelStateInvalidFilter = true;
-});
-
 // map strings to enums where valid
 builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.SuppressModelStateInvalidFilter = true;
+    })
     .AddJsonOptions(o =>
         o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
@@ -106,13 +105,9 @@ app.UseExceptionHandler(appError =>
 
 
 app.UseHttpsRedirection();
-
-app.UseAuthentication();
-
-app.UseAuthorization();
-
 app.UseRateLimiter();
-
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
