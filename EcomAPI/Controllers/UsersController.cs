@@ -26,7 +26,7 @@ namespace EcomAPI.Controllers
 
             if (!ModelState.IsValid)
             {
-                response.Status = 400;
+                response.Status = StatusCodes.Status400BadRequest;
                 response.Message = "Validaiton failed.";
                 response.Errors = ModelState.Values.SelectMany(v => v.Errors)
                                   .Select(e => e.ErrorMessage)
@@ -37,7 +37,7 @@ namespace EcomAPI.Controllers
             var getUserResult = await _usersService.GetUserByEmail(newUser.Email);
             if (getUserResult.Data != null)
             {
-                response.Status = 400;
+                response.Status = StatusCodes.Status400BadRequest;
                 response.Message = "User already exists with this email.";
                 return BadRequest(response);
             }
@@ -52,7 +52,7 @@ namespace EcomAPI.Controllers
             }
 
             response.Success = true;
-            response.Status = 200;
+            response.Status = StatusCodes.Status200OK;
             response.Message = "User created.";
             response.Data = createUserResult.Data;
             return Ok(response);
@@ -66,7 +66,7 @@ namespace EcomAPI.Controllers
 
             if (!ModelState.IsValid)
             {
-                response.Status = 400;
+                response.Status = StatusCodes.Status400BadRequest;
                 response.Message = "Validation failed.";
                 response.Errors = ModelState.Values.SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage)
@@ -79,21 +79,21 @@ namespace EcomAPI.Controllers
 
             if (user == null)
             {
-                response.Status = 401;
+                response.Status = StatusCodes.Status401Unauthorized;
                 response.Message = "Invalid email or password";
                 return Unauthorized(response);
             }
 
             if (!BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
             {
-                response.Status = 401;
+                response.Status = StatusCodes.Status401Unauthorized;
                 response.Message = "Invalid email or password";
                 return Unauthorized(response);
             }
 
             var token = _jwtService.GenerateToken(user);
             response.Success = true;
-            response.Status = 200;
+            response.Status = StatusCodes.Status200OK;
             response.Message = "Login succesful.";
             response.Data = new
             {
@@ -118,7 +118,7 @@ namespace EcomAPI.Controllers
 
             if (!ModelState.IsValid)
             {
-                response.Status = 400;
+                response.Status = StatusCodes.Status400BadRequest;
                 response.Message = "Validation failed";
                 response.Errors = ModelState.Values.SelectMany(v => v.Errors)
                                   .Select(e => e.ErrorMessage)
@@ -130,13 +130,13 @@ namespace EcomAPI.Controllers
 
             if (!changePasswordResult.Success)
             {
-                response.Status = 400;
+                response.Status = StatusCodes.Status400BadRequest;
                 response.Message = changePasswordResult.Message;
                 return BadRequest(response);
             }
 
             response.Success = true;
-            response.Status = 200;
+            response.Status = StatusCodes.Status200OK;
             response.Message = changePasswordResult.Message;
             return Ok(response);
         }
@@ -151,13 +151,13 @@ namespace EcomAPI.Controllers
 
             if (getUserProfileResult.Data == null)
             {
-                response.Status = 404;
+                response.Status = StatusCodes.Status404NotFound;
                 response.Message = "User not found";
                 return NotFound(response);
             }
 
             response.Success = true;
-            response.Status = 200;
+            response.Status = StatusCodes.Status200OK;
             response.Message = "User profile retrieved successfully";
             response.Data = getUserProfileResult.Data;
             return Ok(response);
@@ -172,7 +172,7 @@ namespace EcomAPI.Controllers
 
             if (!deleteUserResult.Success)
             {
-                response.Status = 400;
+                response.Status = StatusCodes.Status400BadRequest;
                 response.Message = "User deletion failed.";
                 return BadRequest(response);
             }

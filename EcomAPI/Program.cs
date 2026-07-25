@@ -1,6 +1,8 @@
-﻿using EcomAPI;
+﻿using Azure.Storage.Blobs;
+using EcomAPI;
 using EcomAPI.Interfaces;
 using EcomAPI.Services;
+using EcomAPI.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Data.SqlClient;
@@ -10,10 +12,8 @@ using System.Text.Json.Serialization;
 
 
 // TO DO LIST:
-// 1. TRANSFORM CONTROLLER TO AZURE APP SERVICE
-// 2. CREATE AN AZURE SQL SERVER AND START STORING DATA THERE
-// 3. CREATE AZURE STORAGE AND START SAVING DATA THERE 
-// 4. STORE USER SESSIONS IN REDIS
+// 1. CREATE AZURE STORAGE AND START SAVING DATA THERE 
+// 2. STORE USER SESSIONS IN REDIS
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,9 +45,12 @@ builder.Services.AddScoped<IProductCategoriesService, ProductCategoriesService>(
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IOrdersService, OrdersService>();
 builder.Services.AddScoped<IProductsService, ProductsService>();
-builder.Services.AddKeyedSingleton<IFileService>("userPhotos", (sp, key) => new FileService("user-photos", [".jpg", ".png"], 5));
-builder.Services.AddKeyedSingleton<IFileService>("productCategoryPhotos", (sp, key) => new FileService("product-category-photos", [".jpg", ".png"], 5));
-builder.Services.AddKeyedSingleton<IFileService>("productPhotos", (sp, key) => new FileService("product-photos", [".jpg", ".png"], 5));
+builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("AzureStorage")));
+
+
+builder.Services.AddKeyedSingleton<IFileService>(FileStores.UserPhotos, (sp, key) => new FileService(sp.GetRequiredService<BlobServiceClient>(), "user-photos", [".jpg", ".png"], 5));
+builder.Services.AddKeyedSingleton<IFileService>(FileStores.ProductCategory, (sp, key) => new FileService(sp.GetRequiredService<BlobServiceClient>(), "product-category-photos", [".jpg", ".png"], 5));
+builder.Services.AddKeyedSingleton<IFileService>(FileStores.ProductPhotos, (sp, key) => new FileService(sp.GetRequiredService<BlobServiceClient>(), "product-photos", [".jpg", ".png"], 5));
 
 
 builder.Services.AddAutoMapper(typeof(MappingConfig));

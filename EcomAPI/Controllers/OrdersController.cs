@@ -26,7 +26,7 @@ namespace EcomAPI.Controllers
 
             if (!ModelState.IsValid)
             {
-                response.Status = 400;
+                response.Status = StatusCodes.Status400BadRequest;
                 response.Message = "Validation failed.";
                 response.Errors = ModelState.Values.SelectMany(v => v.Errors)
                   .Select(e => e.ErrorMessage)
@@ -37,7 +37,7 @@ namespace EcomAPI.Controllers
 
             if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             {
-                response.Status = 403;
+                response.Status = StatusCodes.Status403Forbidden;
                 response.Message = "Unauthorized";
                 return Unauthorized(response);
             }
@@ -45,13 +45,13 @@ namespace EcomAPI.Controllers
             var result = await _ordersService.PlaceOrder(userId, order);
 
             if (result.Success) { 
-                response.Status = 200;
+                response.Status = StatusCodes.Status200OK;
                 response.Success = true;
                 response.Message = "Order placed";
                 return Ok(response);
             }
 
-            response.Status = 400;
+            response.Status = StatusCodes.Status400BadRequest;
             response.Message = "An error has occured while placing order, please try again.";
             return BadRequest(response);
         }

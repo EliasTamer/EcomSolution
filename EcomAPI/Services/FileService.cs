@@ -1,17 +1,19 @@
-﻿using EcomAPI.Interfaces;
+﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using EcomAPI.Interfaces;
 using EcomAPI.Responses;
 
 namespace EcomAPI.Services
 {
     public class FileService : IFileService
     {
-        private readonly string _folderPath;
+        private readonly BlobContainerClient _containerClient;
         private readonly string[] _allowedExtensions;
         private readonly int _maxSize;
 
-        public FileService(string folderPath, string[] allowedExtensions, int maxSize)
+        public FileService(BlobServiceClient blobServiceClient, string containerName, string[] allowedExtensions, int maxSize)
         {
-            _folderPath = folderPath;
+            _containerClient = blobServiceClient.GetBlobContainerClient(containerName);
             _allowedExtensions = allowedExtensions;
             _maxSize = maxSize;
         }
@@ -38,27 +40,29 @@ namespace EcomAPI.Services
                 return ServiceResult<string>.Fail(message);
             }
 
-            var folderPath = Path.Combine("wwwroot", _folderPath);
-            Directory.CreateDirectory(folderPath);
+            await _containerClient.CreateIfNotExistsAsync();
 
             var safeName = $"{Guid.NewGuid()}{extension}";
+            var blobClient = _containerClient.GetBlobClient(safeName);
 
-            var filePath = Path.Combine(folderPath, safeName);
+            var options = new BlobUploadOptions
+            {
+                HttpHeaders = new BlobHttpHeaders { ContentType = file.ContentType }
+            };
 
-            using var stream = new FileStream(filePath, FileMode.Create);
-            await file.CopyToAsync(stream);
+            using var stream = file.OpenReadStream();
+            await blobClient.UploadAsync(stream, options);
 
             return ServiceResult<string>.Ok(safeName);
+
         }
 
-        public ServiceResult<bool> DeleteFile(string path)
+        public async Task<ServiceResult<bool>> DeleteFile(string blobName)
         {
-            if (File.Exists(path))
-            {
-                File.Delete(path);
-                return ServiceResult<bool>.Ok(true);
-            }
-            return ServiceResult<bool>.Fail("File not found");
+            var blobClient = _containerClient.GetBlobClient(blobName);
+            var response = await blobClient.DeleteIfExistsAsync();
+
+            return response.Value ? ServiceResult<bool>.Ok(true) : ServiceResult<bool>.Fail("File not found");
         }
     }
 }

@@ -27,13 +27,13 @@ namespace EcomAPI.Controllers
 
             if (getCategoriesResult.Success)
             {
-                response.Status = 200;
+                response.Status = StatusCodes.Status200OK;
                 response.Success = true;
                 response.Data = getCategoriesResult.Data;
                 return Ok(response);
             }
 
-            response.Status = 400;
+            response.Status = StatusCodes.Status400BadRequest;
             response.Message = getCategoriesResult.Message;
             return BadRequest(response);
         }
@@ -46,7 +46,7 @@ namespace EcomAPI.Controllers
 
             if (!ModelState.IsValid)
             {
-                response.Status = 400;
+                response.Status = StatusCodes.Status400BadRequest;
                 response.Message = "Validation failed.";
                 response.Errors = ModelState.Values.SelectMany(v => v.Errors)
                   .Select(e => e.ErrorMessage)
@@ -58,14 +58,14 @@ namespace EcomAPI.Controllers
 
             if (createCategoryResult.Success)
             {
-                response.Status = 200;
+                response.Status = StatusCodes.Status200OK;
                 response.Success = true;
                 response.Message = "Product category created successfuly.";
                 response.Data = new { productCategoryId = createCategoryResult.Data };
                 return Ok(response);
             }
 
-            response.Status = 400;
+            response.Status = StatusCodes.Status400BadRequest;
             response.Message = "Error occured when creating product category";
             return BadRequest(response);
         }
@@ -81,12 +81,12 @@ namespace EcomAPI.Controllers
             if (deleteCategoryResult.Success)
             {
                 response.Success = true;
-                response.Status = 200;
+                response.Status = StatusCodes.Status200OK;
                 response.Message = "Product category was deleted successfully.";
                 return Ok(response);
             }
 
-            response.Status = 400;
+            response.Status = StatusCodes.Status400BadRequest;
             response.Message = "Product deletion failed.";
             return BadRequest(response);
         }
@@ -101,12 +101,12 @@ namespace EcomAPI.Controllers
 
             if (!getCategoryDetailsResult.Success)
             {
-                response.Status = 404;
+                response.Status = StatusCodes.Status404NotFound;
                 response.Message = "Product category doesn't exist";
                 return NotFound(response);
             }
 
-            response.Status = 200;
+            response.Status = StatusCodes.Status200OK;
             response.Data = getCategoryDetailsResult.Data;
             response.Success = true;
             return Ok(response);
@@ -120,7 +120,7 @@ namespace EcomAPI.Controllers
 
             if (!ModelState.IsValid)
             {
-                response.Status = 400;
+                response.Status = StatusCodes.Status400BadRequest;
                 response.Message = "Validation failed.";
                 response.Errors = ModelState.Values.SelectMany(v => v.Errors)
                   .Select(e => e.ErrorMessage)
@@ -132,13 +132,13 @@ namespace EcomAPI.Controllers
 
             if (!editCategoryResult.Success)
             {
-                response.Status = 400;
+                response.Status = StatusCodes.Status400BadRequest;
                 response.Message = "Editing category has failed.";
                 return BadRequest(response);
             }
 
             response.Success = true;
-            response.Status = 200;
+            response.Status = StatusCodes.Status200OK;
             response.Message = "Category was edited successfuly.";
             return Ok(response);
         }
