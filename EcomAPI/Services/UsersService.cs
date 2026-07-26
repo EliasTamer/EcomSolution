@@ -4,6 +4,7 @@ using EcomAPI.DTOs;
 using EcomAPI.Entities;
 using EcomAPI.Interfaces;
 using EcomAPI.Responses;
+using EcomAPI.Utils;
 
 namespace EcomAPI.Services
 {
@@ -12,7 +13,7 @@ namespace EcomAPI.Services
         private readonly IDbConnection _db;
         private readonly IFileService _fileService;
 
-        public UsersService(IDbConnection db, [FromKeyedServices("userPhotos")] IFileService fileService)
+        public UsersService(IDbConnection db, [FromKeyedServices(FileStores.UserPhotos)] IFileService fileService)
         {
             _db = db;
             _fileService = fileService;

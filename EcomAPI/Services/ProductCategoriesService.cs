@@ -5,6 +5,7 @@ using EcomAPI.Entities;
 using EcomAPI.Interfaces;
 using EcomAPI.Responses;
 using System.Data;
+using EcomAPI.Utils;
 
 namespace EcomAPI.Services
 {
@@ -14,7 +15,7 @@ namespace EcomAPI.Services
         private readonly IMapper _mapper;
         private readonly IFileService _fileService;
 
-        public ProductCategoriesService(IDbConnection db, IMapper mapper, [FromKeyedServices("productCategoryPhotos")] IFileService fileService)
+        public ProductCategoriesService(IDbConnection db, IMapper mapper, [FromKeyedServices(FileStores.ProductCategory)] IFileService fileService)
         {
             _db = db;
             _mapper = mapper;

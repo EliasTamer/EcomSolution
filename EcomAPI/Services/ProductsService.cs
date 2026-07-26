@@ -3,6 +3,7 @@ using EcomAPI.DTOs;
 using EcomAPI.Entities;
 using EcomAPI.Interfaces;
 using EcomAPI.Responses;
+using EcomAPI.Utils;
 using System.Data;
 
 namespace EcomAPI.Services
@@ -11,7 +12,7 @@ namespace EcomAPI.Services
     {
         private readonly IDbConnection _db;
         private readonly IFileService _fileService;
-        public ProductsService(IDbConnection db, [FromKeyedServices("productPhotos")] IFileService fileService)
+        public ProductsService(IDbConnection db, [FromKeyedServices(FileStores.ProductPhotos)] IFileService fileService)
         {
             _db = db;
             _fileService = fileService;
